@@ -1,0 +1,4730 @@
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover"
+  />
+  <title>Rutyna</title>
+  <meta name="description" content="Rutyna – osobista aplikacja PWA do śledzenia nawyków, planowania dnia i obserwowania długoterminowego postępu." />
+  <meta name="theme-color" content="#F2F2F7" id="meta-theme-color" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="Rutyna" />
+
+  <!-- Ikona SVG dla iOS oraz przeglądarek -->
+  <link
+    rel="icon"
+    type="image/svg+xml"
+    href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='116' fill='%23007AFF'/%3E%3Ccircle cx='256' cy='256' r='144' fill='none' stroke='%23FFFFFF' stroke-width='28' stroke-opacity='0.28'/%3E%3Cpath d='M256 112 A144 144 0 1 1 134 332' fill='none' stroke='%23FFFFFF' stroke-width='28' stroke-linecap='round'/%3E%3Cpath d='M196 260 L238 302 L324 210' fill='none' stroke='%23FFFFFF' stroke-width='32' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"
+  />
+  <link
+    rel="apple-touch-icon"
+    href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='116' fill='%23007AFF'/%3E%3Ccircle cx='256' cy='256' r='144' fill='none' stroke='%23FFFFFF' stroke-width='28' stroke-opacity='0.28'/%3E%3Cpath d='M256 112 A144 144 0 1 1 134 332' fill='none' stroke='%23FFFFFF' stroke-width='28' stroke-linecap='round'/%3E%3Cpath d='M196 260 L238 302 L324 210' fill='none' stroke='%23FFFFFF' stroke-width='32' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"
+  />
+  <link rel="manifest" id="pwa-manifest-link" href="" />
+
+  <style>
+    /* ==========================================================================
+       1. ZMIENNE PROJEKTOWE iOS (JASNY I CIEMNY MOTYW) ORAZ RESET
+       ========================================================================== */
+    :root {
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+      --bg-page: #F2F2F7;
+      --bg-card: #FFFFFF;
+      --bg-subtle: #E5E5EA;
+      --bg-input: #F2F2F7;
+      --bg-header: rgba(242, 242, 247, 0.86);
+      --bg-nav: rgba(255, 255, 255, 0.90);
+      --text-primary: #1C1C1E;
+      --text-secondary: #6C6C70;
+      --text-muted: #8E8E93;
+      --border-color: rgba(60, 60, 67, 0.14);
+      --ios-blue: #007AFF;
+      --ios-blue-soft: rgba(0, 122, 255, 0.12);
+      --ios-green: #34C759;
+      --ios-green-soft: rgba(52, 199, 89, 0.14);
+      --ios-red: #FF3B30;
+      --ios-red-soft: rgba(255, 59, 48, 0.12);
+      --ios-amber: #FF9500;
+      --ios-amber-soft: rgba(255, 149, 0, 0.15);
+      --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.04);
+    }
+
+    html.dark {
+      --bg-page: #000000;
+      --bg-card: #1C1C1E;
+      --bg-subtle: #2C2C2E;
+      --bg-input: #2C2C2E;
+      --bg-header: rgba(0, 0, 0, 0.84);
+      --bg-nav: rgba(28, 28, 30, 0.90);
+      --text-primary: #F2F2F7;
+      --text-secondary: #98989F;
+      --text-muted: #636366;
+      --border-color: rgba(255, 255, 255, 0.13);
+      --ios-blue: #0A84FF;
+      --ios-blue-soft: rgba(10, 132, 255, 0.20);
+      --ios-green: #30D158;
+      --ios-green-soft: rgba(48, 209, 88, 0.20);
+      --ios-red: #FF453A;
+      --ios-red-soft: rgba(255, 69, 58, 0.20);
+      --ios-amber: #FF9F0A;
+      --ios-amber-soft: rgba(255, 159, 10, 0.20);
+      --shadow-card: 0 1px 4px rgba(0, 0, 0, 0.35);
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      min-height: 100%;
+      background-color: var(--bg-page);
+      color: var(--text-primary);
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      font-size: 15px;
+      line-height: 1.45;
+      -webkit-font-smoothing: antialiased;
+      -webkit-tap-highlight-color: transparent;
+      -webkit-text-size-adjust: 100%;
+      overscroll-behavior-y: none;
+      touch-action: pan-x pan-y;
+      overflow-x: hidden;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    input, select, textarea {
+      user-select: text;
+      -webkit-user-select: text;
+      font-family: inherit;
+      font-size: 16px !important; /* Zapobiega auto-zoomowi w Safari na iOS */
+      color: var(--text-primary);
+      background-color: var(--bg-input);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 10px 12px;
+      outline: none;
+      touch-action: manipulation;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--ios-blue);
+      box-shadow: 0 0 0 2px var(--ios-blue-soft);
+    }
+
+    button {
+      font-family: inherit;
+      font-size: inherit;
+      color: inherit;
+      background: none;
+      border: none;
+      cursor: pointer;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    button:disabled {
+      opacity: 0.38;
+      cursor: default;
+    }
+
+    /* ==========================================================================
+       2. GŁÓWNY UKŁAD STRONY, PRZYLEPNY NAGŁÓWEK I DOLNA NAWIGACJA
+       ========================================================================== */
+    .app-shell {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .sticky-header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background-color: var(--bg-header);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border-bottom: 1px solid var(--border-color);
+      padding-top: max(10px, var(--safe-top));
+      padding-bottom: 10px;
+      padding-left: 16px;
+      padding-right: 16px;
+    }
+
+    .sticky-header-inner {
+      max-width: 540px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .header-title-wrap {
+      min-width: 0;
+      flex: 1;
+    }
+
+    .header-title-line {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .header-title {
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--text-primary);
+    }
+
+    .header-subtitle {
+      font-size: 12px;
+      color: var(--text-secondary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-top: 1px;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+
+    .main-container {
+      width: 100%;
+      max-width: 540px;
+      margin: 0 auto;
+      padding: 16px 16px calc(98px + var(--safe-bottom)) 16px;
+      flex: 1;
+    }
+
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 90;
+      background-color: var(--bg-nav);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border-top: 1px solid var(--border-color);
+      padding-bottom: var(--safe-bottom);
+    }
+
+    .bottom-nav-inner {
+      max-width: 540px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      height: 62px;
+      padding: 0 8px;
+    }
+
+    .nav-tab-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      color: var(--text-secondary);
+      font-size: 11px;
+      font-weight: 600;
+      border-radius: 12px;
+      transition: color 0.15s ease, transform 0.1s ease;
+    }
+
+    .nav-tab-btn:active {
+      transform: scale(0.95);
+    }
+
+    .nav-tab-btn.active {
+      color: var(--ios-blue);
+    }
+
+    .nav-tab-btn svg {
+      width: 23px;
+      height: 23px;
+    }
+
+    /* ==========================================================================
+       3. KARTY iOS (.ios-card), SEKCJE (.ios-section) I WIERSZE (.ios-row)
+       ========================================================================== */
+    .ios-section {
+      margin-bottom: 22px;
+    }
+
+    .ios-section-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 0 6px 7px 6px;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--text-secondary);
+    }
+
+    .ios-card {
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      box-shadow: var(--shadow-card);
+      overflow: hidden;
+      margin-bottom: 16px;
+    }
+
+    .ios-card-padded {
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      box-shadow: var(--shadow-card);
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+
+    .ios-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .ios-row:last-child {
+      border-bottom: none;
+    }
+
+    .ios-row-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .ios-row-stack:last-child {
+      border-bottom: none;
+    }
+
+    .row-info {
+      min-width: 0;
+      flex: 1;
+    }
+
+    .row-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-primary);
+      line-height: 1.3;
+    }
+
+    .row-subtitle {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-top: 3px;
+      line-height: 1.35;
+    }
+
+    .row-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    /* ==========================================================================
+       4. PRZEŁĄCZNIKI SUWAKOWE (.ios-switch) I SEGMENTOWE (.ios-segmented)
+       ========================================================================== */
+    .ios-switch {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      width: 51px;
+      height: 31px;
+      flex-shrink: 0;
+      border-radius: 999px;
+      background-color: rgba(120, 120, 128, 0.32);
+      padding: 2px;
+      transition: background-color 0.2s ease;
+      cursor: pointer;
+    }
+
+    html.dark .ios-switch {
+      background-color: rgba(120, 120, 128, 0.48);
+    }
+
+    .ios-switch.on {
+      background-color: var(--ios-green);
+    }
+
+    .ios-switch.on-blue {
+      background-color: var(--ios-blue);
+    }
+
+    .ios-switch-thumb {
+      width: 27px;
+      height: 27px;
+      border-radius: 50%;
+      background-color: #FFFFFF;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.25);
+      transform: translateX(0);
+      transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+      pointer-events: none;
+    }
+
+    .ios-switch.on .ios-switch-thumb,
+    .ios-switch.on-blue .ios-switch-thumb {
+      transform: translateX(20px);
+    }
+
+    .ios-segmented {
+      display: grid;
+      background-color: var(--bg-subtle);
+      padding: 3px;
+      border-radius: 11px;
+      gap: 3px;
+      width: 100%;
+    }
+
+    .ios-segmented.cols-2 {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .ios-segmented.cols-3 {
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    .ios-segment-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      padding: 7px 10px;
+      font-size: 13px;
+      font-weight: 600;
+      border-radius: 8px;
+      color: var(--text-secondary);
+      transition: all 0.15s ease;
+      text-align: center;
+      white-space: nowrap;
+    }
+
+    .ios-segment-btn.active {
+      background-color: var(--bg-card);
+      color: var(--text-primary);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+    }
+
+    /* ==========================================================================
+       5. PRZYCISKI, PIGUŁKI (BADGES) I CHECKBOXY NAWYKÓW
+       ========================================================================== */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 8px 14px;
+      border-radius: 12px;
+      font-size: 13px;
+      font-weight: 600;
+      transition: transform 0.1s ease, opacity 0.15s ease;
+      white-space: nowrap;
+    }
+
+    .btn:active {
+      transform: scale(0.96);
+    }
+
+    .btn-primary {
+      background-color: var(--ios-blue);
+      color: #FFFFFF;
+    }
+
+    .btn-secondary {
+      background-color: var(--bg-subtle);
+      color: var(--text-primary);
+    }
+
+    .btn-outline {
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-color);
+      color: var(--text-primary);
+    }
+
+    .btn-amber {
+      background-color: var(--ios-amber-soft);
+      color: var(--ios-amber);
+      border: 1px solid rgba(255, 149, 0, 0.35);
+    }
+
+    .btn-danger {
+      background-color: var(--ios-red);
+      color: #FFFFFF;
+    }
+
+    .btn-danger-soft {
+      background-color: var(--ios-red-soft);
+      color: var(--ios-red);
+    }
+
+    .btn-icon-x {
+      width: 32px;
+      height: 32px;
+      border-radius: 10px;
+      background-color: var(--ios-red-soft);
+      color: var(--ios-red);
+      font-size: 18px;
+      font-weight: 700;
+      line-height: 1;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .btn-icon-x:active {
+      transform: scale(0.92);
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 9px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .pill-blue {
+      background-color: var(--ios-blue-soft);
+      color: var(--ios-blue);
+    }
+
+    .pill-green {
+      background-color: var(--ios-green-soft);
+      color: var(--ios-green);
+    }
+
+    .pill-red {
+      background-color: var(--ios-red-soft);
+      color: var(--ios-red);
+    }
+
+    .pill-amber {
+      background-color: var(--ios-amber-soft);
+      color: var(--ios-amber);
+    }
+
+    .pill-neutral {
+      background-color: var(--bg-subtle);
+      color: var(--text-secondary);
+    }
+
+    .habit-check-btn {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      border: 2.2px solid var(--text-muted);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      color: transparent;
+      transition: all 0.18s ease;
+    }
+
+    .habit-check-btn.important {
+      border-color: var(--ios-blue);
+    }
+
+    .habit-check-btn.attention {
+      border-color: var(--ios-red);
+    }
+
+    .habit-check-btn.completed {
+      background-color: var(--ios-green);
+      border-color: var(--ios-green);
+      color: #FFFFFF;
+    }
+
+    @keyframes checkPop {
+      0% { transform: scale(0.82); }
+      50% { transform: scale(1.16); }
+      100% { transform: scale(1); }
+    }
+
+    .animate-pop {
+      animation: checkPop 0.26s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    /* ==========================================================================
+       6. KALENDARZ MIESIĘCZNY, SIATKA ROCZNA I OZNACZONE OKRESY (WSTĘGI)
+       ========================================================================== */
+    .calendar-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+
+    .calendar-nav-btn {
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      background-color: var(--bg-subtle);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-primary);
+    }
+
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      row-gap: 6px;
+      text-align: center;
+    }
+
+    .calendar-dow {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      padding-bottom: 4px;
+    }
+
+    .cal-cell-wrap {
+      position: relative;
+      padding: 2px;
+    }
+
+    .cal-cell-wrap.ribbon-start {
+      border-top-left-radius: 12px;
+      border-bottom-left-radius: 12px;
+    }
+
+    .cal-cell-wrap.ribbon-end {
+      border-top-right-radius: 12px;
+      border-bottom-right-radius: 12px;
+    }
+
+    .cal-cell-wrap.ribbon-single {
+      border-radius: 12px;
+    }
+
+    .cal-period-top-bar {
+      position: absolute;
+      top: 2px;
+      left: 4px;
+      right: 4px;
+      height: 3.5px;
+      border-radius: 999px;
+      pointer-events: none;
+    }
+
+    .cal-day-btn {
+      width: 100%;
+      height: 42px;
+      border-radius: 11px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-primary);
+      position: relative;
+      transition: background-color 0.15s ease, transform 0.1s ease;
+    }
+
+    .cal-day-btn.outside {
+      opacity: 0.28;
+    }
+
+    .cal-day-btn.today {
+      box-shadow: inset 0 0 0 2px var(--ios-blue);
+      color: var(--ios-blue);
+    }
+
+    .cal-day-btn.selected {
+      background-color: var(--ios-blue) !important;
+      color: #FFFFFF !important;
+    }
+
+    .cal-day-btn.habit-done {
+      background-color: var(--ios-green);
+      color: #FFFFFF;
+    }
+
+    .cal-day-btn.habit-missed {
+      background-color: var(--ios-red-soft);
+      color: var(--ios-red);
+      border: 1px solid rgba(255, 59, 48, 0.35);
+    }
+
+    .cal-dots {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      height: 6px;
+      margin-top: 2px;
+    }
+
+    .dot-planner {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background-color: var(--ios-blue);
+    }
+
+    .cal-day-btn.selected .dot-planner {
+      background-color: #FFFFFF;
+    }
+
+    .dot-habits-done {
+      width: 8px;
+      height: 4px;
+      border-radius: 99px;
+      background-color: var(--ios-green);
+    }
+
+    .cal-day-btn.selected .dot-habits-done {
+      background-color: #A7F3D0;
+    }
+
+    /* Kolory okresów w kalendarzu (Wyjazd, Urlop, Choroba, Delegacja, Wydarzenie) */
+    .period-bg-amber { background-color: rgba(245, 158, 11, 0.20); }
+    .period-bar-amber { background-color: #F59E0B; }
+    .period-badge-amber {
+      background-color: rgba(245, 158, 11, 0.15);
+      color: #B45309;
+      border: 1px solid rgba(245, 158, 11, 0.40);
+    }
+    html.dark .period-badge-amber { color: #FCD34D; }
+
+    .period-bg-sky { background-color: rgba(14, 165, 233, 0.20); }
+    .period-bar-sky { background-color: #0EA5E9; }
+    .period-badge-sky {
+      background-color: rgba(14, 165, 233, 0.15);
+      color: #0369A1;
+      border: 1px solid rgba(14, 165, 233, 0.40);
+    }
+    html.dark .period-badge-sky { color: #7DD3FC; }
+
+    .period-bg-purple { background-color: rgba(168, 85, 247, 0.20); }
+    .period-bar-purple { background-color: #A855F7; }
+    .period-badge-purple {
+      background-color: rgba(168, 85, 247, 0.15);
+      color: #7E22CE;
+      border: 1px solid rgba(168, 85, 247, 0.40);
+    }
+    html.dark .period-badge-purple { color: #D8B4FE; }
+
+    .period-bg-rose { background-color: rgba(244, 63, 94, 0.20); }
+    .period-bar-rose { background-color: #F43F5E; }
+    .period-badge-rose {
+      background-color: rgba(244, 63, 94, 0.15);
+      color: #BE123C;
+      border: 1px solid rgba(244, 63, 94, 0.40);
+    }
+    html.dark .period-badge-rose { color: #FDA4AF; }
+
+    .period-bg-teal { background-color: rgba(20, 184, 166, 0.20); }
+    .period-bar-teal { background-color: #14B8A6; }
+    .period-badge-teal {
+      background-color: rgba(20, 184, 166, 0.15);
+      color: #0F766E;
+      border: 1px solid rgba(20, 184, 166, 0.40);
+    }
+    html.dark .period-badge-teal { color: #5EEAD4; }
+
+    /* Siatka roczna (GitHub-style 52 tygodnie) */
+    .year-grid-scroll {
+      overflow-x: auto;
+      padding-bottom: 8px;
+    }
+
+    .year-grid-weeks {
+      display: inline-flex;
+      gap: 4px;
+      min-width: 100%;
+      justify-content: flex-end;
+    }
+
+    .year-grid-col {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .year-cell {
+      width: 13px;
+      height: 13px;
+      border-radius: 3px;
+      background-color: var(--bg-subtle);
+    }
+
+    .year-cell.future {
+      background-color: transparent;
+      border: 1px dashed var(--border-color);
+    }
+
+    .year-cell.lvl-0 { background-color: var(--bg-subtle); }
+    .year-cell.lvl-1 { background-color: rgba(52, 199, 89, 0.32); }
+    .year-cell.lvl-2 { background-color: rgba(52, 199, 89, 0.64); }
+    .year-cell.lvl-3 { background-color: var(--ios-green); }
+
+    .year-cell.today-ring {
+      outline: 2px solid var(--ios-blue);
+      outline-offset: 1px;
+    }
+
+    .year-cell.selected-ring {
+      outline: 2px solid var(--text-primary);
+      outline-offset: 1px;
+    }
+
+    /* ==========================================================================
+       7. MODALE (SHEET / DIALOG) I POWIADOMIENIA TOAST
+       ========================================================================== */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 150;
+      background-color: rgba(0, 0, 0, 0.46);
+      backdrop-filter: blur(3px);
+      -webkit-backdrop-filter: blur(3px);
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+    }
+
+    @media (min-width: 560px) {
+      .modal-backdrop {
+        align-items: center;
+        padding: 16px;
+      }
+    }
+
+    .modal-sheet {
+      width: 100%;
+      max-width: 520px;
+      max-height: 92vh;
+      overflow-y: auto;
+      background-color: var(--bg-page);
+      border-top-left-radius: 24px;
+      border-top-right-radius: 24px;
+      border: 1px solid var(--border-color);
+      box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.25);
+      padding-bottom: calc(20px + var(--safe-bottom));
+    }
+
+    @media (min-width: 560px) {
+      .modal-sheet {
+        border-radius: 24px;
+      }
+    }
+
+    .modal-topbar {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background-color: var(--bg-card);
+      border-bottom: 1px solid var(--border-color);
+      padding: 14px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .modal-body {
+      padding: 16px;
+    }
+
+    .stats-3-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .stat-box {
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      padding: 12px;
+      text-align: left;
+    }
+
+    .stat-label {
+      font-size: 11px;
+      color: var(--text-secondary);
+      font-weight: 600;
+    }
+
+    .stat-value {
+      font-size: 22px;
+      font-weight: 700;
+      margin-top: 2px;
+      color: var(--text-primary);
+    }
+
+    .stat-sub {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .days-7-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 6px;
+    }
+
+    .day-pill-btn {
+      height: 38px;
+      border-radius: 10px;
+      font-size: 12px;
+      font-weight: 700;
+      background-color: var(--bg-subtle);
+      color: var(--text-secondary);
+    }
+
+    .day-pill-btn.selected {
+      background-color: var(--ios-blue);
+      color: #FFFFFF;
+    }
+
+    .toast-banner {
+      position: fixed;
+      top: calc(12px + var(--safe-top));
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 200;
+      max-width: 92vw;
+      padding: 10px 16px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 600;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.22);
+      background-color: var(--text-primary);
+      color: var(--bg-card);
+    }
+
+    .hidden {
+      display: none !important;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="app" class="app-shell"></div>
+  <input type="file" id="backup-file-input" accept="application/json,.json" class="hidden" />
+
+  <script>
+    /***********************************************************************
+     * 1. BLOKADA PRZYBLIŻANIA DWOMA PALCAMI (PINCH-TO-ZOOM) NA iPHONIE
+     ***********************************************************************/
+    (function lockIOSZoom() {
+      const preventDefault = (e) => e.preventDefault();
+      document.addEventListener('gesturestart', preventDefault, { passive: false });
+      document.addEventListener('gesturechange', preventDefault, { passive: false });
+      document.addEventListener('gestureend', preventDefault, { passive: false });
+
+      document.addEventListener(
+        'touchmove',
+        (e) => {
+          if (e.touches && e.touches.length > 1) {
+            e.preventDefault();
+          }
+        },
+        { passive: false }
+      );
+
+      let lastTouchEnd = 0;
+      document.addEventListener(
+        'touchend',
+        (e) => {
+          const now = Date.now();
+          if (now - lastTouchEnd <= 280) {
+            e.preventDefault();
+          }
+          lastTouchEnd = now;
+        },
+        { passive: false }
+      );
+    })();
+
+    /***********************************************************************
+     * 2. DYNAMICZNY MANIFEST PWA I SERVICE WORKER
+     ***********************************************************************/
+    const ICON_SVG_URI =
+      "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='116' fill='%23007AFF'/%3E%3Ccircle cx='256' cy='256' r='144' fill='none' stroke='%23FFFFFF' stroke-width='28' stroke-opacity='0.28'/%3E%3Cpath d='M256 112 A144 144 0 1 1 134 332' fill='none' stroke='%23FFFFFF' stroke-width='28' stroke-linecap='round'/%3E%3Cpath d='M196 260 L238 302 L324 210' fill='none' stroke='%23FFFFFF' stroke-width='32' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E";
+
+    function initPWA() {
+      try {
+        const startUrl = window.location.href.split('#')[0];
+        const manifest = {
+          name: 'Rutyna',
+          short_name: 'Rutyna',
+          description: 'Osobista aplikacja PWA do śledzenia nawyków i planowania dnia.',
+          lang: 'pl-PL',
+          start_url: startUrl,
+          display: 'standalone',
+          orientation: 'portrait',
+          background_color: '#F2F2F7',
+          theme_color: '#007AFF',
+          icons: [
+            {
+              src: ICON_SVG_URI,
+              sizes: '192x192 512x512',
+              type: 'image/svg+xml',
+              purpose: 'any maskable'
+            }
+          ]
+        };
+        const blob = new Blob([JSON.stringify(manifest)], { type: 'application/manifest+json' });
+        const url = URL.createObjectURL(blob);
+        const link = document.getElementById('pwa-manifest-link');
+        if (link) link.setAttribute('href', url);
+      } catch (err) {
+        console.warn('Błąd tworzenia manifestu PWA:', err);
+      }
+
+      if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
+        navigator.serviceWorker.register('./sw.js').catch(() => {});
+      }
+    }
+
+    /***********************************************************************
+     * 3. NARZĘDZIA DAT LOKALNYCH (YYYY-MM-DD BEZ BŁĘDÓW UTC / DST)
+     ***********************************************************************/
+    function toLocalDateString(date = new Date()) {
+      const y = date.getFullYear();
+      const m = String(date.getMonth() + 1).padStart(2, '0');
+      const d = String(date.getDate()).padStart(2, '0');
+      return `${y}-${m}-${d}`;
+    }
+
+    function parseLocalDate(dateStr) {
+      const [y, m, d] = String(dateStr).split('-').map(Number);
+      return new Date(y || 2026, (m || 1) - 1, d || 1, 12, 0, 0, 0);
+    }
+
+    function addDays(dateStr, days) {
+      const d = parseLocalDate(dateStr);
+      d.setDate(d.getDate() + days);
+      return toLocalDateString(d);
+    }
+
+    function compareDateStrings(a, b) {
+      if (a === b) return 0;
+      return a < b ? -1 : 1;
+    }
+
+    function getDayOfWeek(dateStr) {
+      return parseLocalDate(dateStr).getDay();
+    }
+
+    function getStartOfWeek(dateStr, weekStartsOn = 1) {
+      const d = parseLocalDate(dateStr);
+      const diff = (d.getDay() - weekStartsOn + 7) % 7;
+      d.setDate(d.getDate() - diff);
+      return toLocalDateString(d);
+    }
+
+    function getMonthDays(year, monthZeroIndexed) {
+      const list = [];
+      const d = new Date(year, monthZeroIndexed, 1, 12, 0, 0);
+      while (d.getMonth() === monthZeroIndexed) {
+        list.push(toLocalDateString(d));
+        d.setDate(d.getDate() + 1);
+      }
+      return list;
+    }
+
+    function getCalendarGridDays(year, monthZeroIndexed, weekStartsOn = 1) {
+      const firstDay = new Date(year, monthZeroIndexed, 1, 12, 0, 0);
+      const offset = (firstDay.getDay() - weekStartsOn + 7) % 7;
+      const start = new Date(year, monthZeroIndexed, 1 - offset, 12, 0, 0);
+      const daysInMonth = new Date(year, monthZeroIndexed + 1, 0, 12, 0, 0).getDate();
+      const total = Math.ceil((offset + daysInMonth) / 7) * 7;
+
+      const cells = [];
+      for (let i = 0; i < total; i++) {
+        const dt = new Date(start.getFullYear(), start.getMonth(), start.getDate() + i, 12, 0, 0);
+        cells.push({
+          dateStr: toLocalDateString(dt),
+          inCurrentMonth: dt.getMonth() === monthZeroIndexed
+        });
+      }
+      return cells;
+    }
+
+    function formatPolishFullDate(dateStr) {
+      const d = parseLocalDate(dateStr);
+      const s = new Intl.DateTimeFormat('pl-PL', {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long'
+      }).format(d);
+      return s.charAt(0).toUpperCase() + s.slice(1);
+    }
+
+    function formatPolishMonthYear(year, monthZeroIndexed) {
+      const d = new Date(year, monthZeroIndexed, 1, 12, 0, 0);
+      const s = new Intl.DateTimeFormat('pl-PL', {
+        month: 'long',
+        year: 'numeric'
+      }).format(d);
+      return s.charAt(0).toUpperCase() + s.slice(1);
+    }
+
+    function formatShortDayMonth(dateStr) {
+      const parts = String(dateStr).split('-');
+      if (parts.length !== 3) return dateStr;
+      return `${parts[2]}.${parts[1]}`;
+    }
+
+    const DAY_LABELS_MON_FIRST = [
+      { day: 1, label: 'Pn', full: 'Poniedziałek' },
+      { day: 2, label: 'Wt', full: 'Wtorek' },
+      { day: 3, label: 'Śr', full: 'Środa' },
+      { day: 4, label: 'Cz', full: 'Czwartek' },
+      { day: 5, label: 'Pt', full: 'Piątek' },
+      { day: 6, label: 'So', full: 'Sobota' },
+      { day: 0, label: 'Nd', full: 'Niedziela' }
+    ];
+
+    function getOrderedWeekDays(weekStartsOn = 1) {
+      if (Number(weekStartsOn) === 1) return DAY_LABELS_MON_FIRST;
+      return [DAY_LABELS_MON_FIRST[6], ...DAY_LABELS_MON_FIRST.slice(0, 6)];
+    }
+
+    function generateId(prefix = 'id') {
+      if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+        return `${prefix}_${crypto.randomUUID()}`;
+      }
+      return `${prefix}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 9)}`;
+    }
+
+    function escapeHtml(str) {
+      return String(str ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    /***********************************************************************
+     * 4. OBSŁUGA OZNACZONYCH OKRESÓW W KALENDARZU (NP. WYJAZD, URLOP)
+     ***********************************************************************/
+    const PERIOD_COLORS = {
+      amber: {
+        id: 'amber',
+        label: 'Bursztynowy',
+        bgClass: 'period-bg-amber',
+        barClass: 'period-bar-amber',
+        badgeClass: 'period-badge-amber',
+        hex: '#F59E0B'
+      },
+      sky: {
+        id: 'sky',
+        label: 'Błękitny',
+        bgClass: 'period-bg-sky',
+        barClass: 'period-bar-sky',
+        badgeClass: 'period-badge-sky',
+        hex: '#0EA5E9'
+      },
+      purple: {
+        id: 'purple',
+        label: 'Fioletowy',
+        bgClass: 'period-bg-purple',
+        barClass: 'period-bar-purple',
+        badgeClass: 'period-badge-purple',
+        hex: '#A855F7'
+      },
+      rose: {
+        id: 'rose',
+        label: 'Koralowy',
+        bgClass: 'period-bg-rose',
+        barClass: 'period-bar-rose',
+        badgeClass: 'period-badge-rose',
+        hex: '#F43F5E'
+      },
+      teal: {
+        id: 'teal',
+        label: 'Morski',
+        bgClass: 'period-bg-teal',
+        barClass: 'period-bar-teal',
+        badgeClass: 'period-badge-teal',
+        hex: '#14B8A6'
+      }
+    };
+
+    function getPeriodColorMeta(colorKey) {
+      return PERIOD_COLORS[colorKey] || PERIOD_COLORS.amber;
+    }
+
+    function getPeriodsForDate(dateStr, periods = state.periods) {
+      if (!Array.isArray(periods)) return [];
+      return periods.filter(
+        (p) =>
+          compareDateStrings(dateStr, p.startDate) >= 0 &&
+          compareDateStrings(dateStr, p.endDate) <= 0
+      );
+    }
+
+    function getPeriodsForMonth(year, monthZeroIndexed, periods = state.periods) {
+      if (!Array.isArray(periods) || periods.length === 0) return [];
+      const days = getMonthDays(year, monthZeroIndexed);
+      if (days.length === 0) return [];
+      const first = days[0];
+      const last = days[days.length - 1];
+      return periods
+        .filter(
+          (p) =>
+            compareDateStrings(p.startDate, last) <= 0 &&
+            compareDateStrings(p.endDate, first) >= 0
+        )
+        .sort((a, b) => a.startDate.localeCompare(b.startDate));
+    }
+
+    function getPeriodRibbonInfo(dateStr, periods = state.periods) {
+      if (state.settings && state.settings.showPeriodsOnCalendar === false) {
+        return null;
+      }
+      const list = getPeriodsForDate(dateStr, periods);
+      if (list.length === 0) return null;
+      const primary = list[0];
+      const meta = getPeriodColorMeta(primary.color);
+      const isStart = primary.startDate === dateStr;
+      const isEnd = primary.endDate === dateStr;
+
+      let shapeClass = '';
+      if (isStart && isEnd) shapeClass = 'ribbon-single';
+      else if (isStart) shapeClass = 'ribbon-start';
+      else if (isEnd) shapeClass = 'ribbon-end';
+
+      return {
+        period: primary,
+        allPeriods: list,
+        meta,
+        isStart,
+        isEnd,
+        shapeClass
+      };
+    }
+
+    /***********************************************************************
+     * 5. BAZA DANYCH INDEXEDDB (rutyna_db_v2) + EKSPORT JSON I CSV
+     ***********************************************************************/
+    const DB_NAME = 'rutyna_db_v2';
+    const DB_VERSION = 2;
+
+    const DEFAULT_SETTINGS = {
+      id: 'user_settings',
+      theme: 'system', // 'system' | 'light' | 'dark'
+      weekStartsOn: 1, // 1 = Poniedziałek, 0 = Niedziela
+      notificationsEnabled: false,
+      showPeriodsOnCalendar: true,
+      neverMissTwiceAlerts: true,
+      showUnscheduledToday: true
+    };
+
+    let dbPromise = null;
+
+    function openDatabase() {
+      if (dbPromise) return dbPromise;
+
+      dbPromise = new Promise((resolve, reject) => {
+        if (typeof indexedDB === 'undefined') {
+          reject(new Error('Przeglądarka nie obsługuje bazy danych IndexedDB.'));
+          return;
+        }
+
+        const req = indexedDB.open(DB_NAME, DB_VERSION);
+
+        req.onupgradeneeded = () => {
+          const db = req.result;
+          if (!db.objectStoreNames.contains('habits')) {
+            db.createObjectStore('habits', { keyPath: 'id' });
+          }
+          if (!db.objectStoreNames.contains('completions')) {
+            db.createObjectStore('completions', { keyPath: 'id' });
+          }
+          if (!db.objectStoreNames.contains('planner_entries')) {
+            db.createObjectStore('planner_entries', { keyPath: 'id' });
+          }
+          if (!db.objectStoreNames.contains('calendar_periods')) {
+            db.createObjectStore('calendar_periods', { keyPath: 'id' });
+          }
+          if (!db.objectStoreNames.contains('settings')) {
+            db.createObjectStore('settings', { keyPath: 'id' });
+          }
+        };
+
+        req.onsuccess = () => resolve(req.result);
+        req.onerror = () => {
+          dbPromise = null;
+          reject(req.error || new Error('Nie udało się otworzyć bazy danych IndexedDB.'));
+        };
+      });
+
+      return dbPromise;
+    }
+
+    async function dbGetAll(storeName) {
+      const db = await openDatabase();
+      if (!db.objectStoreNames.contains(storeName)) return [];
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(storeName, 'readonly');
+        const req = tx.objectStore(storeName).getAll();
+        req.onsuccess = () => resolve(req.result || []);
+        req.onerror = () => reject(req.error);
+      });
+    }
+
+    async function dbPut(storeName, record) {
+      const db = await openDatabase();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(storeName, 'readwrite');
+        tx.objectStore(storeName).put(record);
+        tx.oncomplete = () => resolve(record);
+        tx.onerror = () => reject(tx.error || new Error('Błąd zapisu w IndexedDB.'));
+      });
+    }
+
+    async function dbDelete(storeName, key) {
+      const db = await openDatabase();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(storeName, 'readwrite');
+        tx.objectStore(storeName).delete(key);
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error);
+      });
+    }
+
+    async function dbDeleteHabitCascade(habitId) {
+      const [completions, plannerEntries, db] = await Promise.all([
+        dbGetAll('completions'),
+        dbGetAll('planner_entries'),
+        openDatabase()
+      ]);
+
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(['habits', 'completions', 'planner_entries'], 'readwrite');
+        tx.objectStore('habits').delete(habitId);
+
+        const compStore = tx.objectStore('completions');
+        completions
+          .filter((c) => c.habitId === habitId)
+          .forEach((c) => compStore.delete(c.id));
+
+        const planStore = tx.objectStore('planner_entries');
+        plannerEntries
+          .filter((p) => p.linkedHabitId === habitId)
+          .forEach((p) => {
+            planStore.put({ ...p, linkedHabitId: undefined, updatedAt: Date.now() });
+          });
+
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error);
+      });
+    }
+
+    async function dbClearAllData() {
+      const db = await openDatabase();
+      const stores = ['habits', 'completions', 'planner_entries', 'calendar_periods', 'settings'];
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(stores, 'readwrite');
+        stores.forEach((s) => {
+          if (db.objectStoreNames.contains(s)) {
+            tx.objectStore(s).clear();
+          }
+        });
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error);
+      });
+    }
+
+    async function dbSetHabitCompletion(habitId, dateStr, completed) {
+      const record = {
+        id: `${habitId}_${dateStr}`,
+        habitId,
+        date: dateStr,
+        completed: Boolean(completed),
+        updatedAt: Date.now()
+      };
+      await dbPut('completions', record);
+      return record;
+    }
+
+    async function dbSavePlannerBatch(entries) {
+      const db = await openDatabase();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction('planner_entries', 'readwrite');
+        const store = tx.objectStore('planner_entries');
+        entries.forEach((e) => store.put(e));
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error);
+      });
+    }
+
+    function validateBackupPayload(raw) {
+      if (!raw || typeof raw !== 'object') {
+        throw new Error('Plik nie zawiera poprawnego obiektu JSON.');
+      }
+      if (raw.app !== 'Rutyna' || typeof raw.schemaVersion !== 'number') {
+        throw new Error('Plik nie jest prawidłową kopią zapasową aplikacji Rutyna.');
+      }
+      if (!Array.isArray(raw.habits) || !Array.isArray(raw.completions) || !Array.isArray(raw.plannerEntries)) {
+        throw new Error('Struktura danych w pliku kopii zapasowej jest niekompletna.');
+      }
+      for (const h of raw.habits) {
+        if (!h || typeof h.id !== 'string' || typeof h.name !== 'string' || !h.schedule) {
+          throw new Error('Wykryto nieprawidłowy rekord nawyku w pliku importu.');
+        }
+      }
+      const periodsRaw = Array.isArray(raw.periods)
+        ? raw.periods
+        : Array.isArray(raw.calendarPeriods)
+        ? raw.calendarPeriods
+        : [];
+
+      const validPeriods = periodsRaw.filter(
+        (p) =>
+          p &&
+          typeof p.id === 'string' &&
+          typeof p.name === 'string' &&
+          /^\d{4}-\d{2}-\d{2}$/.test(p.startDate) &&
+          /^\d{4}-\d{2}-\d{2}$/.test(p.endDate)
+      );
+
+      return {
+        schemaVersion: raw.schemaVersion,
+        exportedAt: raw.exportedAt || new Date().toISOString(),
+        app: 'Rutyna',
+        habits: raw.habits,
+        completions: raw.completions.map((c) => ({
+          ...c,
+          id: `${c.habitId}_${c.date}`,
+          completed: Boolean(c.completed)
+        })),
+        plannerEntries: raw.plannerEntries,
+        periods: validPeriods,
+        settings: {
+          ...DEFAULT_SETTINGS,
+          ...(raw.settings || {}),
+          id: 'user_settings'
+        }
+      };
+    }
+
+    async function dbRestoreBackup(validated) {
+      const db = await openDatabase();
+      const stores = ['habits', 'completions', 'planner_entries', 'calendar_periods', 'settings'];
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(stores, 'readwrite');
+        stores.forEach((s) => tx.objectStore(s).clear());
+
+        validated.habits.forEach((h) => tx.objectStore('habits').put(h));
+        validated.completions.forEach((c) => tx.objectStore('completions').put(c));
+        validated.plannerEntries.forEach((p) => tx.objectStore('planner_entries').put(p));
+        (validated.periods || []).forEach((per) => tx.objectStore('calendar_periods').put(per));
+        tx.objectStore('settings').put(validated.settings);
+
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error);
+      });
+    }
+
+    function escapeCsvField(val) {
+      const s = String(val ?? '').replace(/\r?\n/g, ' ');
+      if (s.includes(';') || s.includes('"')) {
+        return `"${s.replace(/"/g, '""')}"`;
+      }
+      return s;
+    }
+
+    function downloadCsvFile(filename, headers, rows) {
+      const BOM = '\uFEFF';
+      const headerLine = headers.map(escapeCsvField).join(';');
+      const bodyLines = rows.map((r) => r.map(escapeCsvField).join(';'));
+      const csv = BOM + [headerLine, ...bodyLines].join('\r\n');
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    function exportHabitsAndHistoryToCSV() {
+      const headers = [
+        'ID nawyku',
+        'Nazwa nawyku',
+        'Status nawyku',
+        'Harmonogram',
+        'Ważny',
+        'Godzina wykonania',
+        'Data utworzenia',
+        'Data wykonania',
+        'Status wykonania',
+        'Oznaczony okres (np. wyjazd)',
+        'Notatka'
+      ];
+
+      const rows = [];
+      const byHabit = new Map();
+      for (const c of state.completions) {
+        const arr = byHabit.get(c.habitId) || [];
+        arr.push(c);
+        byHabit.set(c.habitId, arr);
+      }
+
+      const sortedHabits = [...state.habits].sort((a, b) => a.name.localeCompare(b.name, 'pl'));
+      for (const h of sortedHabits) {
+        const statusPl =
+          h.status === 'active' ? 'Aktywny' : h.status === 'paused' ? 'Wstrzymany' : 'Zarchiwizowany';
+        const schedPl = formatScheduleLabel(h.schedule);
+        const impPl = h.important ? 'Tak' : 'Nie';
+        const comps = (byHabit.get(h.id) || []).sort((a, b) => a.date.localeCompare(b.date));
+
+        if (comps.length === 0) {
+          rows.push([
+            h.id,
+            h.name,
+            statusPl,
+            schedPl,
+            impPl,
+            h.executionTime || '',
+            h.createdAt,
+            '',
+            'Brak wpisów historii',
+            '',
+            h.note || ''
+          ]);
+        } else {
+          for (const c of comps) {
+            const activePeriods = getPeriodsForDate(c.date).map((p) => p.name).join(', ');
+            rows.push([
+              h.id,
+              h.name,
+              statusPl,
+              schedPl,
+              impPl,
+              h.executionTime || '',
+              h.createdAt,
+              c.date,
+              c.completed ? 'Wykonany' : 'Cofnięty',
+              activePeriods,
+              h.note || ''
+            ]);
+          }
+        }
+      }
+
+      downloadCsvFile(`rutyna-nawyki-historia-${state.todayStr}.csv`, headers, rows);
+    }
+
+    function exportPlannerAndPeriodsToCSV() {
+      const headers = [
+        'Typ rekordu',
+        'ID',
+        'Data / Przedział',
+        'Tryb / Kolor',
+        'Godzina / Pora dnia',
+        'Treść / Nazwa',
+        'Opis / Notatka',
+        'Powiązany nawyk',
+        'Oznaczony okres w tym dniu',
+        'Status'
+      ];
+
+      const periodNames = { morning: 'Rano', afternoon: 'Popołudnie', evening: 'Wieczór' };
+      const sortedEntries = [...state.plannerEntries].sort(
+        (a, b) => a.date.localeCompare(b.date) || (a.order || 0) - (b.order || 0)
+      );
+
+      const rows = sortedEntries.map((p) => {
+        const habit = state.habits.find((h) => h.id === p.linkedHabitId);
+        const activePeriods = getPeriodsForDate(p.date).map((per) => per.name).join(', ');
+        return [
+          'Wpis planera',
+          p.id,
+          p.date,
+          p.mode === 'time' ? 'Godzinowy' : 'Pora dnia',
+          p.mode === 'time' ? p.time || '' : periodNames[p.timeOfDay || 'morning'] || 'Rano',
+          p.content,
+          p.description || '',
+          habit ? habit.name : '',
+          activePeriods,
+          p.done ? 'Wykonane' : 'Do zrobienia'
+        ];
+      });
+
+      const sortedPeriods = [...state.periods].sort((a, b) => a.startDate.localeCompare(b.startDate));
+      for (const per of sortedPeriods) {
+        rows.push([
+          'Okres w kalendarzu',
+          per.id,
+          `${per.startDate} -> ${per.endDate}`,
+          getPeriodColorMeta(per.color).label,
+          'Całodniowy okres',
+          per.name,
+          per.note || '',
+          '',
+          per.name,
+          'Aktywny'
+        ]);
+      }
+
+      downloadCsvFile(`rutyna-planer-i-okresy-${state.todayStr}.csv`, headers, rows);
+    }
+
+    /***********************************************************************
+     * 6. SILNIK LOGIKI DOMENOWEJ (HARMONOGRAMY, SERIE, ZASADA 2 POMINIĘĆ)
+     ***********************************************************************/
+    function buildCompletionMap(completions) {
+      const map = new Map();
+      for (const item of completions) {
+        if (item.completed) {
+          map.set(`${item.habitId}_${item.date}`, true);
+        }
+      }
+      return map;
+    }
+
+    function isHabitCompletedOnDate(habitId, dateStr, completionMap) {
+      return completionMap.get(`${habitId}_${dateStr}`) === true;
+    }
+
+    function isHabitScheduledOnDate(habit, dateStr, completionMap, weekStartsOn = 1) {
+      if (compareDateStrings(dateStr, habit.createdAt) < 0) {
+        if (completionMap && isHabitCompletedOnDate(habit.id, dateStr, completionMap)) {
+          return true;
+        }
+        return false;
+      }
+
+      const schedule = habit.schedule || { type: 'daily' };
+      if (schedule.type === 'daily') return true;
+
+      if (schedule.type === 'specific_days') {
+        const dow = getDayOfWeek(dateStr);
+        return Array.isArray(schedule.daysOfWeek) && schedule.daysOfWeek.includes(dow);
+      }
+
+      if (schedule.type === 'times_per_week') {
+        const target = Math.max(1, Math.min(7, Number(schedule.timesPerWeek) || 1));
+        if (!completionMap) return true;
+        if (isHabitCompletedOnDate(habit.id, dateStr, completionMap)) return true;
+
+        const weekStart = getStartOfWeek(dateStr, weekStartsOn);
+        let doneInWeek = 0;
+        for (let i = 0; i < 7; i++) {
+          const d = addDays(weekStart, i);
+          if (d !== dateStr && isHabitCompletedOnDate(habit.id, d, completionMap)) {
+            doneInWeek++;
+          }
+        }
+        return doneInWeek < target;
+      }
+
+      return false;
+    }
+
+    function formatScheduleLabel(schedule) {
+      if (!schedule || schedule.type === 'daily') return 'Codziennie';
+      if (schedule.type === 'specific_days') {
+        const days = schedule.daysOfWeek || [];
+        if (days.length === 7) return 'Codziennie';
+        if (days.length === 5 && [1, 2, 3, 4, 5].every((d) => days.includes(d))) {
+          return 'Dni robocze (Pn–Pt)';
+        }
+        if (days.length === 2 && days.includes(0) && days.includes(6)) {
+          return 'Weekendy (So–Nd)';
+        }
+        const labels = DAY_LABELS_MON_FIRST.filter((d) => days.includes(d.day)).map((d) => d.label);
+        return labels.length > 0 ? labels.join(', ') : 'Wybrane dni';
+      }
+      if (schedule.type === 'times_per_week') {
+        const n = Number(schedule.timesPerWeek) || 1;
+        return n === 1 ? '1 raz w tygodniu' : `${n} razy w tygodniu`;
+      }
+      return 'Codziennie';
+    }
+
+    function shouldShowNeverMissTwiceAlert(habit, todayStr, completionMap, weekStartsOn = 1) {
+      if (state.settings && state.settings.neverMissTwiceAlerts === false) return false;
+      if (habit.status !== 'active') return false;
+      if (isHabitCompletedOnDate(habit.id, todayStr, completionMap)) return false;
+      if (!isHabitScheduledOnDate(habit, todayStr, completionMap, weekStartsOn)) return false;
+
+      let cursor = addDays(todayStr, -1);
+      let safety = 0;
+      while (compareDateStrings(cursor, habit.createdAt) >= 0 && safety < 366) {
+        safety++;
+        if (isHabitScheduledOnDate(habit, cursor, completionMap, weekStartsOn)) {
+          const donePrev = isHabitCompletedOnDate(habit.id, cursor, completionMap);
+          return !donePrev;
+        }
+        cursor = addDays(cursor, -1);
+      }
+      return false;
+    }
+
+    function calculateHabitStats(habit, todayStr, year, monthZeroIndexed, completionMap, weekStartsOn = 1) {
+      let currentStreak = 0;
+      let bestStreak = 0;
+      let running = 0;
+
+      let cursor = habit.createdAt;
+      if (compareDateStrings(cursor, todayStr) <= 0) {
+        while (compareDateStrings(cursor, todayStr) <= 0) {
+          const scheduled = isHabitScheduledOnDate(habit, cursor, completionMap, weekStartsOn);
+          const completed = isHabitCompletedOnDate(habit.id, cursor, completionMap);
+          if (scheduled) {
+            if (completed) {
+              running++;
+              if (running > bestStreak) bestStreak = running;
+            } else if (cursor !== todayStr) {
+              running = 0;
+            }
+          }
+          cursor = addDays(cursor, 1);
+        }
+        currentStreak = running;
+      }
+
+      const monthDays = getMonthDays(year, monthZeroIndexed);
+      let monthScheduledCount = 0;
+      let monthCompletedCount = 0;
+
+      for (const dStr of monthDays) {
+        if (compareDateStrings(dStr, todayStr) > 0) continue;
+        const scheduled = isHabitScheduledOnDate(habit, dStr, completionMap, weekStartsOn);
+        const completed = isHabitCompletedOnDate(habit.id, dStr, completionMap);
+        if (scheduled) {
+          if (dStr === todayStr && !completed) continue;
+          monthScheduledCount++;
+          if (completed) monthCompletedCount++;
+        }
+      }
+
+      const monthCompletionRate =
+        monthScheduledCount === 0 ? 0 : Math.round((monthCompletedCount / monthScheduledCount) * 100);
+
+      return {
+        currentStreak,
+        bestStreak,
+        monthCompletionRate,
+        monthCompletedCount,
+        monthScheduledCount
+      };
+    }
+
+    function getHabitDayState(habit, dateStr, todayStr, completionMap, weekStartsOn = 1) {
+      if (compareDateStrings(dateStr, todayStr) > 0) return 'future';
+      if (isHabitCompletedOnDate(habit.id, dateStr, completionMap)) return 'completed';
+      if (!isHabitScheduledOnDate(habit, dateStr, completionMap, weekStartsOn)) return 'unscheduled';
+      if (dateStr === todayStr) return 'today_pending';
+      return 'missed';
+    }
+
+    function getDailyAggregateSummary(dateStr, todayStr, habits, completionMap, weekStartsOn = 1) {
+      const isFuture = compareDateStrings(dateStr, todayStr) > 0;
+      const isToday = dateStr === todayStr;
+
+      const eligible = habits.filter((h) => {
+        if (h.status === 'active') return true;
+        if (h.status === 'archived') {
+          return compareDateStrings(dateStr, todayStr) < 0 && compareDateStrings(dateStr, h.createdAt) >= 0;
+        }
+        return false;
+      });
+
+      const scheduledHabits = [];
+      for (const h of eligible) {
+        const completed = isHabitCompletedOnDate(h.id, dateStr, completionMap);
+        const scheduled = isHabitScheduledOnDate(h, dateStr, completionMap, weekStartsOn);
+        if (scheduled || completed) {
+          scheduledHabits.push({ habit: h, completed });
+        }
+      }
+
+      scheduledHabits.sort((a, b) => {
+        if (a.habit.important !== b.habit.important) return a.habit.important ? -1 : 1;
+        const tA = a.habit.executionTime || '99:99';
+        const tB = b.habit.executionTime || '99:99';
+        if (tA !== tB) return tA.localeCompare(tB);
+        return a.habit.name.localeCompare(b.habit.name, 'pl');
+      });
+
+      const scheduledCount = scheduledHabits.length;
+      const completedCount = scheduledHabits.filter((x) => x.completed).length;
+
+      let completionRatio = null;
+      if (!isFuture && scheduledCount > 0) {
+        completionRatio = completedCount / scheduledCount;
+      }
+
+      return {
+        dateStr,
+        isFuture,
+        isToday,
+        scheduledCount,
+        completedCount,
+        completionRatio,
+        scheduledHabits
+      };
+    }
+
+    /***********************************************************************
+     * 7. POWIADOMIENIA WEBOWE / iOS PWA
+     ***********************************************************************/
+    function getNotificationEnvironmentStatus() {
+      const ua = navigator.userAgent || '';
+      const isIOS =
+        /iPad|iPhone|iPod/.test(ua) ||
+        (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+      const isStandalonePWA =
+        window.matchMedia('(display-mode: standalone)').matches || Boolean(navigator.standalone);
+      const supported = 'Notification' in window;
+      const permission = supported ? Notification.permission : 'unsupported';
+
+      let backgroundPushNote =
+        'Lokalne przypomnienia działają, gdy aplikacja jest otwarta lub aktywna w pamięci. Powiadomienia przy całkowicie zamkniętej aplikacji wymagają serwera Web Push (VAPID).';
+
+      if (isIOS && !isStandalonePWA) {
+        backgroundPushNote =
+          'Na iPhonie powiadomienia wymagają dodania aplikacji „Rutyna” do ekranu początkowego (Udostępnij → Dodaj do ekranu początkowego) oraz systemu iOS 16.4+.';
+      }
+
+      return {
+        supported,
+        permission,
+        isIOS,
+        isStandalonePWA,
+        canReceiveLocalForeground: supported && permission === 'granted',
+        backgroundPushNote
+      };
+    }
+
+    async function requestNotificationPermissionInteractive() {
+      const status = getNotificationEnvironmentStatus();
+      if (!status.supported) {
+        return {
+          granted: false,
+          message:
+            status.isIOS && !status.isStandalonePWA
+              ? 'Dodaj najpierw aplikację Rutyna do ekranu początkowego iPhone’a (Udostępnij → Dodaj do ekranu początkowego).'
+              : 'Przeglądarka nie obsługuje API powiadomień webowych.'
+        };
+      }
+      try {
+        const res = await Notification.requestPermission();
+        if (res === 'granted') {
+          return { granted: true, message: 'Przyznano uprawnienia do powiadomień lokalnych.' };
+        }
+        return { granted: false, message: 'Nie przyznano zgody na powiadomienia.' };
+      } catch {
+        return { granted: false, message: 'Wystąpił błąd podczas proszenia o uprawnienia.' };
+      }
+    }
+
+    async function sendImmediateNotification(title, body) {
+      const status = getNotificationEnvironmentStatus();
+      if (!status.supported || status.permission !== 'granted') return false;
+      try {
+        if ('serviceWorker' in navigator) {
+          const reg = await navigator.serviceWorker.getRegistration();
+          if (reg && 'showNotification' in reg) {
+            await reg.showNotification(title, {
+              body,
+              icon: ICON_SVG_URI,
+              badge: ICON_SVG_URI,
+              tag: `rutyna_${Date.now()}`
+            });
+            return true;
+          }
+        }
+        new Notification(title, { body, icon: ICON_SVG_URI });
+        return true;
+      } catch {
+        return false;
+      }
+    }
+
+    /***********************************************************************
+     * 8. ZESTAW 20 TESTÓW JEDNOSTKOWYCH (DIAGNOSTYKA)
+     ***********************************************************************/
+    function runBuiltInUnitTests() {
+      const results = [];
+      const check = (name, cond) => results.push({ name, passed: Boolean(cond) });
+
+      const today = '2026-10-18';
+      const dailyHabit = {
+        id: 'h_1',
+        name: 'Czytanie',
+        createdAt: '2026-10-01',
+        status: 'active',
+        schedule: { type: 'daily' },
+        important: true,
+        reminder: { enabled: false, time: '08:00' }
+      };
+
+      check(
+        '1. Lokalny format daty odporny na zmianę czasu (DST)',
+        toLocalDateString(parseLocalDate('2026-03-29')) === '2026-03-29' &&
+          addDays('2026-03-29', 1) === '2026-03-30'
+      );
+
+      const emptySum = getDailyAggregateSummary(today, today, [], new Map(), 1);
+      check(
+        '2. Pusty stan zwraca 0 zaplanowanych nawyków i neutralny dzień',
+        emptySum.scheduledCount === 0 && emptySum.completionRatio === null
+      );
+
+      check(
+        '3. Harmonogram codzienny aktywny od daty utworzenia',
+        isHabitScheduledOnDate(dailyHabit, today, new Map(), 1) === true &&
+          isHabitScheduledOnDate(dailyHabit, '2026-09-30', new Map(), 1) === false
+      );
+
+      const mwfHabit = {
+        ...dailyHabit,
+        id: 'h_mwf',
+        schedule: { type: 'specific_days', daysOfWeek: [1, 3, 5] }
+      };
+      check(
+        '4. Harmonogram wybranych dni tygodnia (Pn/Śr/Pt)',
+        isHabitScheduledOnDate(mwfHabit, '2026-10-16', new Map(), 1) === true &&
+          isHabitScheduledOnDate(mwfHabit, '2026-10-18', new Map(), 1) === false
+      );
+
+      const mapDone = buildCompletionMap([
+        { id: 'h_1_2026-10-18', habitId: 'h_1', date: today, completed: true }
+      ]);
+      const sumDone = getDailyAggregateSummary(today, today, [dailyHabit], mapDone, 1);
+      check('5. Oznaczenie wykonania aktualizuje podsumowanie do 1/1 (100%)', sumDone.completedCount === 1);
+
+      const mapUndo = buildCompletionMap([
+        { id: 'h_1_2026-10-18', habitId: 'h_1', date: today, completed: false }
+      ]);
+      const sumUndo = getDailyAggregateSummary(today, today, [dailyHabit], mapUndo, 1);
+      check('6. Cofnięcie wykonania aktualizuje podsumowanie do 0/1 (0%)', sumUndo.completedCount === 0);
+
+      check(
+        '7. Dni poza harmonogramem mają status "unscheduled", a nie "missed"',
+        getHabitDayState(mwfHabit, '2026-10-17', today, new Map(), 1) === 'unscheduled'
+      );
+
+      check(
+        '8. Dni z przyszłości mają status "future" i nie są liczone jako pominięcia',
+        getHabitDayState(dailyHabit, '2026-10-19', today, new Map(), 1) === 'future'
+      );
+
+      const prevAlert = state.settings.neverMissTwiceAlerts;
+      state.settings.neverMissTwiceAlerts = true;
+      check(
+        '9. Zasada "Nie pomijaj dwa razy z rzędu" wykrywa pominiętą poprzednią okazję',
+        shouldShowNeverMissTwiceAlert(dailyHabit, today, new Map(), 1) === true
+      );
+      check(
+        '10. Alert "Nie przerywaj rytmu" znika natychmiast po wykonaniu nawyku',
+        shouldShowNeverMissTwiceAlert(dailyHabit, today, mapDone, 1) === false
+      );
+      state.settings.neverMissTwiceAlerts = prevAlert;
+
+      const mwfDoneFriday = buildCompletionMap([
+        { id: 'h_mwf_2026-10-16', habitId: 'h_mwf', date: '2026-10-16', completed: true }
+      ]);
+      check(
+        '11. Weekend poza harmonogramem nie wywołuje fałszywego alertu w poniedziałek',
+        shouldShowNeverMissTwiceAlert(mwfHabit, '2026-10-19', mwfDoneFriday, 1) === false
+      );
+
+      const streakMap = buildCompletionMap([
+        { id: 'h_1_2026-10-15', habitId: 'h_1', date: '2026-10-15', completed: true },
+        { id: 'h_1_2026-10-16', habitId: 'h_1', date: '2026-10-16', completed: true },
+        { id: 'h_1_2026-10-17', habitId: 'h_1', date: '2026-10-17', completed: true }
+      ]);
+      const st = calculateHabitStats(dailyHabit, today, 2026, 9, streakMap, 1);
+      check('12. Seria nawyku (3 dni) nie zeruje się w trakcie trwającego dnia dzisiejszego', st.currentStreak === 3);
+
+      const archHabit = { ...dailyHabit, id: 'h_arch', status: 'archived' };
+      check(
+        '13. Zarchiwizowany nawyk znika z Dzisiaj, ale pozostaje w historii przeszłych dni',
+        getDailyAggregateSummary(today, today, [archHabit], new Map(), 1).scheduledCount === 0 &&
+          getDailyAggregateSummary('2026-10-10', today, [archHabit], new Map(), 1).scheduledCount === 1
+      );
+
+      let rejected = false;
+      try {
+        validateBackupPayload({ app: 'ZlaAplikacja' });
+      } catch {
+        rejected = true;
+      }
+      check('14. Walidacja kopii zapasowej JSON odrzuca uszkodzone pliki', rejected);
+
+      check(
+        '15. Generator CSV poprawnie escapuje średniki i cudzysłowy dla Excela',
+        escapeCsvField('Test; "A"') === '"Test; ""A"""'
+      );
+
+      const testPeriods = [
+        { id: 'p1', name: 'Wyjazd', startDate: '2026-10-26', endDate: '2026-10-28', color: 'amber' }
+      ];
+      const prevShowPer = state.settings.showPeriodsOnCalendar;
+      state.settings.showPeriodsOnCalendar = true;
+      const ribStart = getPeriodRibbonInfo('2026-10-26', testPeriods);
+      const ribMid = getPeriodRibbonInfo('2026-10-27', testPeriods);
+      const ribAfter = getPeriodRibbonInfo('2026-10-29', testPeriods);
+      state.settings.showPeriodsOnCalendar = prevShowPer;
+      check(
+        '16. Oznaczone okresy (np. Wyjazd 26–28.10) tworzą ciągłą wstęgę w kalendarzu',
+        Boolean(ribStart && ribStart.isStart && ribMid && !ribMid.isStart && ribAfter === null)
+      );
+
+      const xWeekHabit = {
+        ...dailyHabit,
+        id: 'h_2w',
+        schedule: { type: 'times_per_week', timesPerWeek: 2 }
+      };
+      const twoDone = buildCompletionMap([
+        { id: 'h_2w_2026-10-12', habitId: 'h_2w', date: '2026-10-12', completed: true },
+        { id: 'h_2w_2026-10-14', habitId: 'h_2w', date: '2026-10-14', completed: true }
+      ]);
+      check(
+        '17. Harmonogram X razy w tygodniu oznacza cel jako zrealizowany po 2 wykonaniach',
+        isHabitScheduledOnDate(xWeekHabit, '2026-10-16', twoDone, 1) === false
+      );
+
+      check(
+        '18. Przełączanie początku tygodnia (Poniedziałek vs Niedziela)',
+        getOrderedWeekDays(1)[0].day === 1 && getOrderedWeekDays(0)[0].day === 0
+      );
+
+      const pausedHabit = { ...dailyHabit, id: 'h_p', status: 'paused' };
+      check(
+        '19. Wstrzymany nawyk nie jest wymagany w dzisiejszym planie',
+        getDailyAggregateSummary(today, today, [pausedHabit], new Map(), 1).scheduledCount === 0
+      );
+
+      check('20. Dostępność silnika bazy danych IndexedDB', typeof indexedDB !== 'undefined');
+
+      return results;
+    }
+
+    /***********************************************************************
+     * 9. STAN APLIKACJI I ZARZĄDZANIE MOTYWEM
+     ***********************************************************************/
+    const STARTER_SUGGESTIONS = [
+      {
+        name: 'Szklanka wody po przebudzeniu',
+        executionTime: '07:30',
+        schedule: { type: 'daily' },
+        note: 'Zanim sięgniesz po telefon'
+      },
+      {
+        name: '20 minut czytania książki',
+        executionTime: '21:00',
+        schedule: { type: 'daily' },
+        note: 'Wieczorny relaks'
+      },
+      {
+        name: 'Trening lub szybki spacer',
+        executionTime: '17:30',
+        schedule: { type: 'specific_days', daysOfWeek: [1, 3, 5] },
+        note: 'Minimum 30 minut ruchu'
+      },
+      {
+        name: '10 minut rozciągania',
+        executionTime: '',
+        schedule: { type: 'times_per_week', timesPerWeek: 4 },
+        note: 'Mobilność i kręgosłup'
+      }
+    ];
+
+    const PERIOD_PRESETS = [
+      { name: 'Wyjazd', color: 'amber' },
+      { name: 'Urlop / Wakacje', color: 'sky' },
+      { name: 'Delegacja', color: 'purple' },
+      { name: 'Choroba / Przeziębienie', color: 'rose' },
+      { name: 'Goście / Wydarzenie', color: 'teal' }
+    ];
+
+    const state = {
+      loaded: false,
+      todayStr: toLocalDateString(),
+      activeTab: 'today', // 'today' | 'planner' | 'settings'
+      internalView: null, // null | 'overall_history'
+
+      habits: [],
+      completions: [],
+      plannerEntries: [],
+      periods: [],
+      settings: { ...DEFAULT_SETTINGS },
+
+      justToggledHabitId: null,
+      toast: null,
+
+      historyMode: 'year',
+      historyMonthYear: {
+        year: parseLocalDate(toLocalDateString()).getFullYear(),
+        month: parseLocalDate(toLocalDateString()).getMonth()
+      },
+      historySelectedDate: toLocalDateString(),
+
+      detailHabitId: null,
+      detailConfirmDelete: false,
+      detailMonthYear: {
+        year: parseLocalDate(toLocalDateString()).getFullYear(),
+        month: parseLocalDate(toLocalDateString()).getMonth()
+      },
+
+      habitModalOpen: false,
+      habitForm: null,
+
+      periodModalOpen: false,
+      periodForm: null,
+
+      plannerSelectedDate: toLocalDateString(),
+      plannerMonthYear: {
+        year: parseLocalDate(toLocalDateString()).getFullYear(),
+        month: parseLocalDate(toLocalDateString()).getMonth()
+      },
+      plannerMode: 'period', // 'period' | 'time'
+      plannerFormOpen: false,
+      plannerForm: null,
+
+      inlineDeleteHabitId: null,
+      inlineDeletePeriodId: null,
+      pendingBackupImport: null,
+      confirmClearAllData: false,
+      unitTestResults: null
+    };
+
+    function showToast(text) {
+      state.toast = text;
+      renderApp();
+      clearTimeout(window.__rutynaToastTimer);
+      window.__rutynaToastTimer = setTimeout(() => {
+        state.toast = null;
+        renderApp();
+      }, 3200);
+    }
+
+    function isDarkActive() {
+      const mode = state.settings?.theme || 'system';
+      const sysDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      return mode === 'dark' || (mode === 'system' && sysDark);
+    }
+
+    function applyTheme() {
+      const dark = isDarkActive();
+      const root = document.documentElement;
+      if (dark) root.classList.add('dark');
+      else root.classList.remove('dark');
+
+      const meta = document.getElementById('meta-theme-color');
+      if (meta) meta.setAttribute('content', dark ? '#000000' : '#F2F2F7');
+    }
+
+    async function loadAllData() {
+      try {
+        const [habits, completions, plannerEntries, periods, settingsList] = await Promise.all([
+          dbGetAll('habits'),
+          dbGetAll('completions'),
+          dbGetAll('planner_entries'),
+          dbGetAll('calendar_periods'),
+          dbGetAll('settings')
+        ]);
+
+        state.habits = habits;
+        state.completions = completions;
+        state.plannerEntries = plannerEntries;
+        state.periods = periods;
+        const saved = settingsList.find((s) => s.id === 'user_settings');
+        state.settings = saved ? { ...DEFAULT_SETTINGS, ...saved } : { ...DEFAULT_SETTINGS };
+        state.todayStr = toLocalDateString();
+        state.loaded = true;
+        applyTheme();
+        renderApp();
+      } catch (err) {
+        state.loaded = true;
+        showToast('Błąd inicjalizacji bazy danych.');
+        renderApp();
+      }
+    }
+
+    async function updateSettings(partial) {
+      const next = { ...state.settings, ...partial, id: 'user_settings' };
+      await dbPut('settings', next);
+      state.settings = next;
+      applyTheme();
+      renderApp();
+    }
+
+    /***********************************************************************
+     * 10. AKCJE UŻYTKOWNIKA (NAWYKI, OKRESY, PLANER)
+     ***********************************************************************/
+    async function toggleHabitCompletion(habitId, dateStr) {
+      const map = buildCompletionMap(state.completions);
+      const current = isHabitCompletedOnDate(habitId, dateStr, map);
+      const next = !current;
+
+      if (dateStr === state.todayStr) {
+        state.justToggledHabitId = habitId;
+        setTimeout(() => {
+          if (state.justToggledHabitId === habitId) {
+            state.justToggledHabitId = null;
+            renderApp();
+          }
+        }, 300);
+      }
+
+      const saved = await dbSetHabitCompletion(habitId, dateStr, next);
+      const idx = state.completions.findIndex((c) => c.id === saved.id);
+      if (idx >= 0) state.completions[idx] = saved;
+      else state.completions.push(saved);
+      renderApp();
+    }
+
+    function openHabitModal(habit = null) {
+      state.habitForm = {
+        isEdit: Boolean(habit),
+        id: habit?.id || generateId('habit'),
+        createdAt: habit?.createdAt || state.todayStr,
+        name: habit?.name || '',
+        scheduleType: habit?.schedule?.type || 'daily',
+        daysOfWeek: habit?.schedule?.daysOfWeek ? [...habit.schedule.daysOfWeek] : [1, 2, 3, 4, 5],
+        timesPerWeek: habit?.schedule?.timesPerWeek || 3,
+        executionTime: habit?.executionTime || '',
+        important: Boolean(habit?.important),
+        reminderEnabled: Boolean(habit?.reminder?.enabled),
+        reminderTime: habit?.reminder?.time || habit?.executionTime || '08:00',
+        note: habit?.note || '',
+        status: habit?.status || 'active',
+        confirmDelete: false,
+        error: null
+      };
+      state.habitModalOpen = true;
+      renderApp();
+    }
+
+    async function saveHabitModalForm() {
+      const f = state.habitForm;
+      if (!f) return;
+      const name = f.name.trim();
+      if (!name) {
+        f.error = 'Podaj nazwę nawyku.';
+        renderApp();
+        return;
+      }
+      if (f.scheduleType === 'specific_days' && (!f.daysOfWeek || f.daysOfWeek.length === 0)) {
+        f.error = 'Wybierz co najmniej jeden dzień tygodnia.';
+        renderApp();
+        return;
+      }
+
+      const schedule =
+        f.scheduleType === 'daily'
+          ? { type: 'daily' }
+          : f.scheduleType === 'specific_days'
+          ? { type: 'specific_days', daysOfWeek: [...f.daysOfWeek].sort() }
+          : { type: 'times_per_week', timesPerWeek: Number(f.timesPerWeek) || 3 };
+
+      const record = {
+        id: f.id,
+        name,
+        createdAt: f.createdAt,
+        updatedAt: Date.now(),
+        status: f.status,
+        schedule,
+        important: Boolean(f.important),
+        executionTime: f.executionTime.trim() || undefined,
+        reminder: {
+          enabled: Boolean(f.reminderEnabled),
+          time: f.reminderTime || '08:00'
+        },
+        note: f.note.trim() || undefined
+      };
+
+      await dbPut('habits', record);
+      const idx = state.habits.findIndex((h) => h.id === record.id);
+      if (idx >= 0) state.habits[idx] = record;
+      else state.habits.push(record);
+
+      state.habitModalOpen = false;
+      state.habitForm = null;
+      showToast(f.isEdit ? 'Zapisano zmiany w nawyku.' : 'Dodano nowy nawyk.');
+      renderApp();
+    }
+
+    async function deleteHabitEverywhere(habitId) {
+      if (!habitId) return;
+      await dbDeleteHabitCascade(habitId);
+      state.habits = state.habits.filter((h) => h.id !== habitId);
+      state.completions = state.completions.filter((c) => c.habitId !== habitId);
+      state.plannerEntries = state.plannerEntries.map((p) =>
+        p.linkedHabitId === habitId ? { ...p, linkedHabitId: undefined } : p
+      );
+      state.inlineDeleteHabitId = null;
+      state.detailConfirmDelete = false;
+      if (state.detailHabitId === habitId) state.detailHabitId = null;
+      if (state.habitForm && state.habitForm.id === habitId) {
+        state.habitModalOpen = false;
+        state.habitForm = null;
+      }
+      showToast('Nawyk został trwale usunięty.');
+      renderApp();
+    }
+
+    function openPeriodModal(periodToEdit = null) {
+      const defaultStart = state.activeTab === 'planner' ? state.plannerSelectedDate : state.todayStr;
+      state.periodForm = {
+        isEdit: Boolean(periodToEdit),
+        id: periodToEdit?.id || generateId('period'),
+        name: periodToEdit?.name || '',
+        startDate: periodToEdit?.startDate || defaultStart,
+        endDate: periodToEdit?.endDate || addDays(defaultStart, 2),
+        color: periodToEdit?.color || 'amber',
+        note: periodToEdit?.note || '',
+        error: null
+      };
+      state.periodModalOpen = true;
+      renderApp();
+    }
+
+    async function savePeriodModalForm() {
+      const pf = state.periodForm;
+      if (!pf) return;
+      const name = pf.name.trim();
+      if (!name) {
+        pf.error = 'Podaj nazwę okresu (np. Wyjazd, Urlop).';
+        renderApp();
+        return;
+      }
+      let startDate = pf.startDate || state.todayStr;
+      let endDate = pf.endDate || startDate;
+      if (compareDateStrings(endDate, startDate) < 0) {
+        const tmp = startDate;
+        startDate = endDate;
+        endDate = tmp;
+      }
+
+      const record = {
+        id: pf.id,
+        name,
+        startDate,
+        endDate,
+        color: pf.color || 'amber',
+        note: pf.note.trim() || undefined,
+        createdAt: Date.now()
+      };
+
+      await dbPut('calendar_periods', record);
+      const idx = state.periods.findIndex((p) => p.id === record.id);
+      if (idx >= 0) state.periods[idx] = record;
+      else state.periods.push(record);
+
+      state.periodModalOpen = false;
+      state.periodForm = null;
+      showToast(`Zapisano okres: ${record.name} (${formatShortDayMonth(startDate)}–${formatShortDayMonth(endDate)})`);
+      renderApp();
+    }
+
+    async function deletePeriodEverywhere(periodId) {
+      if (!periodId) return;
+      await dbDelete('calendar_periods', periodId);
+      state.periods = state.periods.filter((p) => p.id !== periodId);
+      state.inlineDeletePeriodId = null;
+      showToast('Usunięto okres z kalendarza.');
+      renderApp();
+    }
+
+    function openPlannerForm(entry = null, presetPeriod = 'morning') {
+      if (entry) {
+        state.plannerMode = entry.mode || 'period';
+        state.plannerForm = {
+          isEdit: true,
+          id: entry.id,
+          content: entry.content,
+          description: entry.description || '',
+          timeOfDay: entry.timeOfDay || 'morning',
+          time: entry.time || '09:00',
+          linkedHabitId: entry.linkedHabitId || '',
+          order: entry.order,
+          done: Boolean(entry.done),
+          createdAt: entry.createdAt
+        };
+      } else {
+        state.plannerForm = {
+          isEdit: false,
+          id: generateId('plan'),
+          content: '',
+          description: '',
+          timeOfDay: presetPeriod || 'morning',
+          time: '09:00',
+          linkedHabitId: '',
+          order: null,
+          done: false,
+          createdAt: Date.now()
+        };
+      }
+      state.plannerFormOpen = true;
+      renderApp();
+    }
+
+    async function savePlannerForm() {
+      const pf = state.plannerForm;
+      if (!pf) return;
+      const content = pf.content.trim();
+      if (!content) {
+        showToast('Wpisz treść zadania w planerze.');
+        return;
+      }
+      const existing = state.plannerEntries.filter((e) => e.date === state.plannerSelectedDate);
+      const maxOrder = existing.reduce((m, x) => Math.max(m, x.order || 0), 0);
+
+      const record = {
+        id: pf.id,
+        date: state.plannerSelectedDate,
+        content,
+        description: pf.description.trim() || undefined,
+        mode: state.plannerMode,
+        timeOfDay: state.plannerMode === 'period' ? pf.timeOfDay : undefined,
+        time: state.plannerMode === 'time' ? pf.time || '09:00' : undefined,
+        linkedHabitId: pf.linkedHabitId || undefined,
+        order: pf.order !== null ? pf.order : maxOrder + 1,
+        done: Boolean(pf.done),
+        createdAt: pf.createdAt,
+        updatedAt: Date.now()
+      };
+
+      await dbPut('planner_entries', record);
+      const idx = state.plannerEntries.findIndex((e) => e.id === record.id);
+      if (idx >= 0) state.plannerEntries[idx] = record;
+      else state.plannerEntries.push(record);
+
+      state.plannerFormOpen = false;
+      state.plannerForm = null;
+      renderApp();
+    }
+
+    /***********************************************************************
+     * 11. RENDEROWANIE INTERFEJSU HTML
+     ***********************************************************************/
+    function renderPeriodBannersForDate(dateStr) {
+      const active = getPeriodsForDate(dateStr);
+      if (active.length === 0) return '';
+      return `
+        <div style="display:flex; flex-direction:column; gap:8px; margin-bottom:14px;">
+          ${active
+            .map((p) => {
+              const meta = getPeriodColorMeta(p.color);
+              return `
+                <div class="pill ${meta.badgeClass}" style="padding:9px 12px; border-radius:14px; justify-content:space-between; width:100%;">
+                  <div style="display:flex; align-items:center; gap:8px; min-width:0; white-space:normal;">
+                    <span style="width:9px; height:9px; border-radius:50%; background:${meta.hex}; flex-shrink:0;"></span>
+                    <span style="font-size:12px;">
+                      Trwa okres: <strong>${escapeHtml(p.name)}</strong> (${formatShortDayMonth(p.startDate)}–${formatShortDayMonth(p.endDate)})
+                      ${p.note ? ` • ${escapeHtml(p.note)}` : ''}
+                    </span>
+                  </div>
+                  <button type="button" data-action="edit-period" data-period-id="${escapeHtml(p.id)}" style="font-size:11px; text-decoration:underline; margin-left:8px; flex-shrink:0;">
+                    Edytuj
+                  </button>
+                </div>
+              `;
+            })
+            .join('')}
+        </div>
+      `;
+    }
+
+    function renderMonthPeriodsChips(year, monthZeroIndexed) {
+      const list = getPeriodsForMonth(year, monthZeroIndexed);
+      return `
+        <div style="margin-top:14px; padding-top:12px; border-top:1px solid var(--border-color);">
+          <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:8px;">
+            <span style="font-size:11px; font-weight:600; text-transform:uppercase; color:var(--text-secondary);">
+              Oznaczone okresy w tym miesiącu (${list.length})
+            </span>
+            <button type="button" data-action="open-period-modal" style="font-size:12px; font-weight:600; color:var(--ios-blue);">
+              + Oznacz okres (np. wyjazd)
+            </button>
+          </div>
+          ${
+            list.length === 0
+              ? `<p style="font-size:12px; color:var(--text-muted);">
+                  Brak oznaczonych okresów (np. wyjazd, urlop, delegacja) w tym miesiącu.
+                </p>`
+              : `<div style="display:flex; flex-wrap:wrap; gap:6px;">
+                  ${list
+                    .map((p) => {
+                      const meta = getPeriodColorMeta(p.color);
+                      return `
+                        <div class="pill ${meta.badgeClass}" style="padding:5px 8px 5px 10px; border-radius:10px;">
+                          <span style="width:7px; height:7px; border-radius:50%; background:${meta.hex};"></span>
+                          <button type="button" data-action="edit-period" data-period-id="${escapeHtml(p.id)}" style="font-weight:700;">
+                            ${escapeHtml(p.name)}
+                          </button>
+                          <span style="opacity:0.8;">(${formatShortDayMonth(p.startDate)}–${formatShortDayMonth(p.endDate)})</span>
+                          <button
+                            type="button"
+                            data-action="delete-period-direct"
+                            data-period-id="${escapeHtml(p.id)}"
+                            title="Usuń okres"
+                            style="margin-left:4px; font-size:15px; font-weight:700; line-height:1; padding:0 4px;"
+                          >×</button>
+                        </div>
+                      `;
+                    })
+                    .join('')}
+                </div>`
+          }
+        </div>
+      `;
+    }
+
+    function renderStickyHeader(completionMap) {
+      const todayStr = state.todayStr;
+      const weekStartsOn = state.settings.weekStartsOn;
+
+      if (state.activeTab === 'today' && state.internalView === 'overall_history') {
+        return `
+          <header class="sticky-header">
+            <div class="sticky-header-inner">
+              <button type="button" data-action="close-overall-history" class="btn btn-outline" style="padding:6px 12px;">
+                ← Dzisiaj
+              </button>
+              <div class="header-title-wrap" style="text-align:center;">
+                <div class="header-title" style="font-size:16px;">Historia ogólna</div>
+                <div class="header-subtitle">Ciągłość i statystyki</div>
+              </div>
+              <div style="width:94px;">
+                <div class="ios-segmented cols-2">
+                  <button type="button" data-action="set-history-mode" data-mode="year" class="ios-segment-btn ${state.historyMode === 'year' ? 'active' : ''}" style="padding:5px 6px; font-size:11px;">Rok</button>
+                  <button type="button" data-action="set-history-mode" data-mode="month" class="ios-segment-btn ${state.historyMode === 'month' ? 'active' : ''}" style="padding:5px 6px; font-size:11px;">Mies.</button>
+                </div>
+              </div>
+            </div>
+          </header>
+        `;
+      }
+
+      if (state.activeTab === 'today') {
+        const sum = getDailyAggregateSummary(todayStr, todayStr, state.habits, completionMap, weekStartsOn);
+        const total = sum.scheduledCount;
+        const done = sum.completedCount;
+        const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+
+        return `
+          <header class="sticky-header">
+            <div class="sticky-header-inner">
+              <div class="header-title-wrap">
+                <div class="header-title-line">
+                  <span class="header-title">Dzisiaj</span>
+                  ${
+                    total > 0
+                      ? `<span class="pill ${done === total ? 'pill-green' : 'pill-blue'}">${done}/${total} • ${pct}%</span>`
+                      : ''
+                  }
+                </div>
+                <div class="header-subtitle">${escapeHtml(formatPolishFullDate(todayStr))}</div>
+              </div>
+              <div class="header-actions">
+                ${
+                  state.habits.length > 0
+                    ? `<button type="button" data-action="open-overall-history" class="btn btn-outline" style="padding:7px 11px; font-size:12px;">
+                        Historia
+                      </button>`
+                    : ''
+                }
+                <button type="button" data-action="open-add-habit" class="btn btn-primary" style="padding:7px 12px; font-size:12px;">
+                  + Nawyk
+                </button>
+              </div>
+            </div>
+          </header>
+        `;
+      }
+
+      if (state.activeTab === 'planner') {
+        const sel = state.plannerSelectedDate;
+        return `
+          <header class="sticky-header">
+            <div class="sticky-header-inner">
+              <div class="header-title-wrap">
+                <div class="header-title-line">
+                  <span class="header-title">Planer</span>
+                  <span class="pill pill-neutral">${formatShortDayMonth(sel)}</span>
+                </div>
+                <div class="header-subtitle">${escapeHtml(formatPolishFullDate(sel))}</div>
+              </div>
+              <div class="header-actions">
+                ${
+                  sel !== todayStr
+                    ? `<button type="button" data-action="planner-jump-today" class="btn btn-outline" style="padding:7px 10px; font-size:12px;">Dziś</button>`
+                    : ''
+                }
+                <button type="button" data-action="open-period-modal" class="btn btn-amber" style="padding:7px 10px; font-size:12px;">
+                  + Okres
+                </button>
+                <button type="button" data-action="open-planner-form" class="btn btn-primary" style="padding:7px 11px; font-size:12px;">
+                  + Wpis
+                </button>
+              </div>
+            </div>
+          </header>
+        `;
+      }
+
+      const activeCount = state.habits.filter((h) => h.status === 'active').length;
+      return `
+        <header class="sticky-header">
+          <div class="sticky-header-inner">
+            <div class="header-title-wrap">
+              <div class="header-title-line">
+                <span class="header-title">Ustawienia</span>
+                <span class="pill pill-neutral">Aktywne: ${activeCount}</span>
+              </div>
+              <div class="header-subtitle">Wygląd, nawyki, okresy i kopie zapasowe</div>
+            </div>
+            <div class="header-actions">
+              <button type="button" data-action="open-add-habit" class="btn btn-primary" style="padding:7px 12px; font-size:12px;">
+                + Nawyk
+              </button>
+            </div>
+          </div>
+        </header>
+      `;
+    }
+
+    function renderTodayView(completionMap) {
+      const todayStr = state.todayStr;
+      const weekStartsOn = state.settings.weekStartsOn;
+      const activeHabits = state.habits.filter((h) => h.status === 'active');
+      const sum = getDailyAggregateSummary(todayStr, todayStr, state.habits, completionMap, weekStartsOn);
+
+      const total = sum.scheduledCount;
+      const done = sum.completedCount;
+      const rem = Math.max(0, total - done);
+      const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+
+      const radius = 24;
+      const circ = 2 * Math.PI * radius;
+      const offset = circ - (pct / 100) * circ;
+
+      let remText = 'Wszystkie zaplanowane nawyki na dziś wykonane';
+      if (rem === 1) remText = 'Pozostał 1 nawyk';
+      else if (rem >= 2 && rem <= 4) remText = `Pozostały ${rem} nawyki`;
+      else if (rem >= 5) remText = `Pozostało ${rem} nawyków`;
+
+      const unscheduledHabits = activeHabits.filter(
+        (h) => !sum.scheduledHabits.some((s) => s.habit.id === h.id)
+      );
+
+      return `
+        <div>
+          ${renderPeriodBannersForDate(todayStr)}
+
+          ${
+            activeHabits.length === 0
+              ? `
+            <section class="ios-card-padded" style="text-align:center; padding:32px 20px;">
+              <div style="width:60px; height:60px; border-radius:18px; background:var(--ios-blue-soft); color:var(--ios-blue); display:flex; align-items:center; justify-content:center; margin:0 auto 16px auto;">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <h2 style="font-size:18px; font-weight:700; margin-bottom:8px;">Zacznij od jednej rzeczy</h2>
+              <p style="font-size:13px; color:var(--text-secondary); max-width:300px; margin:0 auto 18px auto;">
+                Małe, regularne kroki budują trwałą rutynę. Dodaj swój pierwszy nawyk, aby śledzić codzienny postęp jednym dotknięciem.
+              </p>
+              <button type="button" data-action="open-add-habit" class="btn btn-primary" style="padding:12px 20px; font-size:14px;">
+                + Dodaj pierwszy nawyk
+              </button>
+            </section>
+          `
+              : `
+            <!-- KARTA PODSUMOWANIA DNIA -->
+            <section class="ios-card-padded" style="display:flex; align-items:center; justify-content:space-between; gap:14px;">
+              <div>
+                <div style="font-size:12px; font-weight:600; color:var(--text-secondary);">Twój dzień</div>
+                ${
+                  total === 0
+                    ? `<div style="font-size:16px; font-weight:700; margin-top:2px;">Dzień bez zaplanowanych nawyków</div>
+                       <div style="font-size:12px; color:var(--text-secondary); margin-top:2px;">Wszystkie Twoje nawyki przypadają na inne dni.</div>`
+                    : `<div style="font-size:19px; font-weight:700; margin-top:2px;">${done} z ${total} wykonane</div>
+                       <div style="font-size:12px; color:var(--text-secondary); margin-top:2px;">${remText}</div>`
+                }
+              </div>
+
+              ${
+                total > 0
+                  ? `<div style="position:relative; width:58px; height:58px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                      <svg width="58" height="58" viewBox="0 0 56 56" style="transform:rotate(-90deg);">
+                        <circle cx="28" cy="28" r="${radius}" fill="none" stroke="var(--bg-subtle)" stroke-width="5" />
+                        <circle
+                          cx="28"
+                          cy="28"
+                          r="${radius}"
+                          fill="none"
+                          stroke="${done === total ? 'var(--ios-green)' : 'var(--ios-blue)'}"
+                          stroke-width="5"
+                          stroke-linecap="round"
+                          stroke-dasharray="${circ}"
+                          stroke-dashoffset="${offset}"
+                        />
+                      </svg>
+                      <span style="position:absolute; font-size:12px; font-weight:700;">${pct}%</span>
+                    </div>`
+                  : ''
+              }
+            </section>
+
+            <!-- ZAPLANOWANE NA DZIŚ -->
+            ${
+              sum.scheduledHabits.length > 0
+                ? `<section class="ios-section">
+                    <div class="ios-section-title">
+                      <span>Zaplanowane na dziś (${sum.scheduledHabits.length})</span>
+                      <span style="text-transform:none; font-weight:500;">1 dotknięcie = wykonano</span>
+                    </div>
+                    <div class="ios-card">
+                      ${sum.scheduledHabits
+                        .map(({ habit, completed }) => {
+                          const alert = shouldShowNeverMissTwiceAlert(habit, todayStr, completionMap, weekStartsOn);
+                          const timeStr = habit.executionTime || (habit.reminder?.enabled ? habit.reminder.time : '');
+                          const pop = state.justToggledHabitId === habit.id;
+
+                          let checkClass = 'habit-check-btn';
+                          if (completed) checkClass += ' completed';
+                          else if (alert) checkClass += ' attention';
+                          else if (habit.important) checkClass += ' important';
+                          if (pop) checkClass += ' animate-pop';
+
+                          return `
+                            <div class="ios-row" style="${alert ? 'background-color:var(--ios-red-soft);' : ''}">
+                              <button
+                                type="button"
+                                role="checkbox"
+                                aria-checked="${completed}"
+                                data-action="toggle-habit-today"
+                                data-habit-id="${escapeHtml(habit.id)}"
+                                class="${checkClass}"
+                              >
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                                  <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                                </svg>
+                              </button>
+
+                              <button
+                                type="button"
+                                data-action="open-habit-detail"
+                                data-habit-id="${escapeHtml(habit.id)}"
+                                class="row-info"
+                                style="text-align:left;"
+                              >
+                                <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+                                  <span class="row-title" style="${completed ? 'text-decoration:line-through; color:var(--text-muted);' : ''}">
+                                    ${escapeHtml(habit.name)}
+                                  </span>
+                                  ${
+                                    habit.important && !completed
+                                      ? `<span class="pill pill-blue" style="padding:1px 6px; font-size:10px;">Ważny</span>`
+                                      : ''
+                                  }
+                                </div>
+                                <div class="row-subtitle" style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                                  ${timeStr ? `<span>🕒 ${escapeHtml(timeStr)}</span>` : ''}
+                                  ${habit.note ? `<span>${escapeHtml(habit.note)}</span>` : ''}
+                                  ${
+                                    alert
+                                      ? `<span style="color:var(--ios-red); font-weight:700;">● Nie przerywaj rytmu</span>`
+                                      : ''
+                                  }
+                                </div>
+                              </button>
+
+                              <button
+                                type="button"
+                                data-action="open-habit-detail"
+                                data-habit-id="${escapeHtml(habit.id)}"
+                                aria-label="Szczegóły nawyku"
+                                style="color:var(--text-muted); font-size:18px; padding:4px 6px;"
+                              >›</button>
+                            </div>
+                          `;
+                        })
+                        .join('')}
+                    </div>
+                  </section>`
+                : ''
+            }
+
+            <!-- POZA DZISIEJSZYM HARMONOGRAMEM -->
+            ${
+              state.settings.showUnscheduledToday !== false && unscheduledHabits.length > 0
+                ? `<section class="ios-section">
+                    <div class="ios-section-title">
+                      <span>Poza dzisiejszym harmonogramem (${unscheduledHabits.length})</span>
+                    </div>
+                    <div class="ios-card">
+                      ${unscheduledHabits
+                        .map(
+                          (h) => `
+                        <button
+                          type="button"
+                          data-action="open-habit-detail"
+                          data-habit-id="${escapeHtml(h.id)}"
+                          class="ios-row"
+                          style="width:100%; text-align:left;"
+                        >
+                          <div class="row-info">
+                            <div class="row-title" style="color:var(--text-secondary);">${escapeHtml(h.name)}</div>
+                            <div class="row-subtitle">${escapeHtml(formatScheduleLabel(h.schedule))}</div>
+                          </div>
+                          <span style="color:var(--text-muted); font-size:18px;">›</span>
+                        </button>
+                      `
+                        )
+                        .join('')}
+                    </div>
+                  </section>`
+                : ''
+            }
+          `
+          }
+        </div>
+      `;
+    }
+
+    function renderOverallHistoryView(completionMap) {
+      const todayStr = state.todayStr;
+      const weekStartsOn = state.settings.weekStartsOn;
+      const orderedDays = getOrderedWeekDays(weekStartsOn);
+
+      const endWeekStart = getStartOfWeek(todayStr, weekStartsOn);
+      const weeks = [];
+      const firstWeekStart = addDays(endWeekStart, -51 * 7);
+      for (let w = 0; w < 52; w++) {
+        const wStart = addDays(firstWeekStart, w * 7);
+        const col = [];
+        for (let d = 0; d < 7; d++) {
+          const dStr = addDays(wStart, d);
+          col.push(getDailyAggregateSummary(dStr, todayStr, state.habits, completionMap, weekStartsOn));
+        }
+        weeks.push(col);
+      }
+
+      const monthCells = getCalendarGridDays(
+        state.historyMonthYear.year,
+        state.historyMonthYear.month,
+        weekStartsOn
+      ).map((c) => ({
+        ...c,
+        summary: getDailyAggregateSummary(c.dateStr, todayStr, state.habits, completionMap, weekStartsOn)
+      }));
+
+      const selectedSum = getDailyAggregateSummary(
+        state.historySelectedDate,
+        todayStr,
+        state.habits,
+        completionMap,
+        weekStartsOn
+      );
+
+      const getYearCellClass = (s) => {
+        if (s.isFuture) return 'year-cell future';
+        if (s.scheduledCount === 0 || s.completionRatio === null || s.completionRatio === 0) return 'year-cell lvl-0';
+        if (s.completionRatio < 0.45) return 'year-cell lvl-1';
+        if (s.completionRatio < 0.85) return 'year-cell lvl-2';
+        return 'year-cell lvl-3';
+      };
+
+      return `
+        <div>
+          ${
+            state.historyMode === 'year'
+              ? `
+            <section class="ios-card-padded">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                <span style="font-size:13px; font-weight:700;">Ostatnie 52 tygodnie</span>
+                <span style="font-size:11px; color:var(--text-secondary);">Dotknij kratki, aby sprawdzić dzień</span>
+              </div>
+              <div class="year-grid-scroll">
+                <div class="year-grid-weeks">
+                  ${weeks
+                    .map(
+                      (col) => `
+                    <div class="year-grid-col">
+                      ${col
+                        .map((daySum) => {
+                          const ring = daySum.isToday
+                            ? 'today-ring'
+                            : daySum.dateStr === state.historySelectedDate
+                            ? 'selected-ring'
+                            : '';
+                          return `<button
+                            type="button"
+                            data-action="select-history-date"
+                            data-date="${daySum.dateStr}"
+                            title="${daySum.dateStr}"
+                            class="${getYearCellClass(daySum)} ${ring}"
+                          ></button>`;
+                        })
+                        .join('')}
+                    </div>
+                  `
+                    )
+                    .join('')}
+                </div>
+              </div>
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px; font-size:11px; color:var(--text-secondary);">
+                <span>Dni bez planu są neutralne</span>
+                <div style="display:flex; align-items:center; gap:4px;">
+                  <span>0%</span>
+                  <span class="year-cell lvl-0" style="display:inline-block;"></span>
+                  <span class="year-cell lvl-1" style="display:inline-block;"></span>
+                  <span class="year-cell lvl-2" style="display:inline-block;"></span>
+                  <span class="year-cell lvl-3" style="display:inline-block;"></span>
+                  <span>100%</span>
+                </div>
+              </div>
+            </section>
+          `
+              : `
+            <section class="ios-card-padded">
+              <div class="calendar-header">
+                <button type="button" data-action="history-prev-month" class="calendar-nav-btn">‹</button>
+                <span style="font-size:15px; font-weight:700;">
+                  ${escapeHtml(formatPolishMonthYear(state.historyMonthYear.year, state.historyMonthYear.month))}
+                </span>
+                <button type="button" data-action="history-next-month" class="calendar-nav-btn">›</button>
+              </div>
+              <div class="calendar-grid">
+                ${orderedDays.map((d) => `<div class="calendar-dow">${d.label}</div>`).join('')}
+                ${monthCells
+                  .map(({ dateStr, inCurrentMonth, summary }) => {
+                    const dayNum = Number(dateStr.split('-')[2]);
+                    const ribbon = getPeriodRibbonInfo(dateStr);
+                    const isSelected = dateStr === state.historySelectedDate;
+                    let dayBtnClass = 'cal-day-btn';
+                    if (!inCurrentMonth) dayBtnClass += ' outside';
+                    if (summary.completionRatio && summary.completionRatio >= 0.85) dayBtnClass += ' habit-done';
+                    if (summary.isToday) dayBtnClass += ' today';
+                    if (isSelected) dayBtnClass += ' selected';
+
+                    return `
+                      <div class="cal-cell-wrap ${ribbon ? `${ribbon.meta.bgClass} ${ribbon.shapeClass}` : ''}">
+                        ${ribbon ? `<span class="cal-period-top-bar ${ribbon.meta.barClass}"></span>` : ''}
+                        <button type="button" data-action="select-history-date" data-date="${dateStr}" class="${dayBtnClass}">
+                          <span>${dayNum}</span>
+                        </button>
+                      </div>
+                    `;
+                  })
+                  .join('')}
+              </div>
+              ${renderMonthPeriodsChips(state.historyMonthYear.year, state.historyMonthYear.month)}
+            </section>
+          `
+          }
+
+          <section class="ios-card-padded">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+              <div>
+                <div style="font-size:11px; font-weight:600; text-transform:uppercase; color:var(--text-secondary);">
+                  Podsumowanie dnia ${selectedSum.isToday ? '(Dzisiaj)' : ''}
+                </div>
+                <div style="font-size:15px; font-weight:700;">${escapeHtml(formatPolishFullDate(selectedSum.dateStr))}</div>
+              </div>
+              ${
+                !selectedSum.isFuture && selectedSum.scheduledCount > 0
+                  ? `<span class="pill pill-blue">${selectedSum.completedCount}/${selectedSum.scheduledCount} (${Math.round((selectedSum.completionRatio || 0) * 100)}%)</span>`
+                  : ''
+              }
+            </div>
+
+            ${renderPeriodBannersForDate(selectedSum.dateStr)}
+
+            ${
+              selectedSum.isFuture
+                ? `<p style="font-size:13px; color:var(--text-secondary);">Dzień z przyszłości — przyszłe dni nie są oceniane.</p>`
+                : selectedSum.scheduledCount === 0
+                ? `<p style="font-size:13px; color:var(--text-secondary);">Brak zaplanowanych nawyków w tym dniu (dzień neutralny).</p>`
+                : `<div>
+                    ${selectedSum.scheduledHabits
+                      .map(
+                        ({ habit, completed }) => `
+                      <div class="ios-row" style="padding:10px 0;">
+                        <button type="button" data-action="open-habit-detail" data-habit-id="${escapeHtml(habit.id)}" style="font-weight:600; text-align:left;">
+                          ${escapeHtml(habit.name)}
+                        </button>
+                        <span class="pill ${completed ? 'pill-green' : selectedSum.isToday ? 'pill-blue' : 'pill-neutral'}">
+                          ${completed ? 'Wykonany' : selectedSum.isToday ? 'W trakcie' : 'Pominięty'}
+                        </span>
+                      </div>
+                    `
+                      )
+                      .join('')}
+                  </div>`
+            }
+          </section>
+        </div>
+      `;
+    }
+
+    function renderPlannerView(completionMap) {
+      const todayStr = state.todayStr;
+      const selDate = state.plannerSelectedDate;
+      const weekStartsOn = state.settings.weekStartsOn;
+      const orderedDays = getOrderedWeekDays(weekStartsOn);
+
+      const byDate = new Map();
+      for (const e of state.plannerEntries) {
+        const list = byDate.get(e.date) || [];
+        list.push(e);
+        byDate.set(e.date, list);
+      }
+
+      const rawDayEntries = [...(byDate.get(selDate) || [])];
+      const dayEntries =
+        state.plannerMode === 'time'
+          ? rawDayEntries.sort((a, b) => (a.time || '99:99').localeCompare(b.time || '99:99') || (a.order || 0) - (b.order || 0))
+          : rawDayEntries.sort((a, b) => (a.order || 0) - (b.order || 0));
+
+      const cells = getCalendarGridDays(
+        state.plannerMonthYear.year,
+        state.plannerMonthYear.month,
+        weekStartsOn
+      );
+
+      const activeHabits = state.habits.filter((h) => h.status === 'active');
+      const periodsMeta = [
+        { id: 'morning', label: '🌅 Rano' },
+        { id: 'afternoon', label: '☀️ Popołudnie' },
+        { id: 'evening', label: '🌙 Wieczór' }
+      ];
+
+      return `
+        <div>
+          <!-- MIESIĘCZNY KALENDARZ PLANERA -->
+          <section class="ios-card-padded">
+            <div class="calendar-header">
+              <button type="button" data-action="planner-prev-month" class="calendar-nav-btn" aria-label="Poprzedni miesiąc">‹</button>
+              <span style="font-size:15px; font-weight:700;">
+                ${escapeHtml(formatPolishMonthYear(state.plannerMonthYear.year, state.plannerMonthYear.month))}
+              </span>
+              <button type="button" data-action="planner-next-month" class="calendar-nav-btn" aria-label="Następny miesiąc">›</button>
+            </div>
+
+            <div class="calendar-grid">
+              ${orderedDays.map((d) => `<div class="calendar-dow">${d.label}</div>`).join('')}
+              ${cells
+                .map(({ dateStr, inCurrentMonth }) => {
+                  const dayNum = Number(dateStr.split('-')[2]);
+                  const isSelected = dateStr === selDate;
+                  const isToday = dateStr === todayStr;
+                  const hasPlan = (byDate.get(dateStr)?.length || 0) > 0;
+                  const sum = getDailyAggregateSummary(dateStr, todayStr, state.habits, completionMap, weekStartsOn);
+                  const allHabitsDone =
+                    !sum.isFuture && sum.scheduledCount > 0 && sum.completedCount === sum.scheduledCount;
+                  const ribbon = getPeriodRibbonInfo(dateStr);
+
+                  let btnClass = 'cal-day-btn';
+                  if (!inCurrentMonth) btnClass += ' outside';
+                  if (isToday) btnClass += ' today';
+                  if (isSelected) btnClass += ' selected';
+
+                  return `
+                    <div class="cal-cell-wrap ${ribbon ? `${ribbon.meta.bgClass} ${ribbon.shapeClass}` : ''}">
+                      ${ribbon ? `<span class="cal-period-top-bar ${ribbon.meta.barClass}" title="${escapeHtml(ribbon.period.name)}"></span>` : ''}
+                      <button
+                        type="button"
+                        data-action="planner-select-date"
+                        data-date="${dateStr}"
+                        title="${ribbon ? `${dateStr} • ${escapeHtml(ribbon.period.name)}` : dateStr}"
+                        class="${btnClass}"
+                      >
+                        <span>${dayNum}</span>
+                        <div class="cal-dots">
+                          ${hasPlan ? `<span class="dot-planner"></span>` : ''}
+                          ${allHabitsDone ? `<span class="dot-habits-done"></span>` : ''}
+                        </div>
+                      </button>
+                    </div>
+                  `;
+                })
+                .join('')}
+            </div>
+
+            <div style="display:flex; flex-wrap:wrap; justify-content:center; gap:14px; margin-top:10px; font-size:11px; color:var(--text-secondary);">
+              <span style="display:inline-flex; align-items:center; gap:5px;">
+                <span class="dot-planner"></span> Wpis planera
+              </span>
+              <span style="display:inline-flex; align-items:center; gap:5px;">
+                <span class="dot-habits-done"></span> Wykonane nawyki
+              </span>
+              <span style="display:inline-flex; align-items:center; gap:5px;">
+                <span style="width:12px; height:4px; border-radius:99px; background:#F59E0B; display:inline-block;"></span> Oznaczony okres (np. wyjazd)
+              </span>
+            </div>
+
+            ${renderMonthPeriodsChips(state.plannerMonthYear.year, state.plannerMonthYear.month)}
+          </section>
+
+          ${renderPeriodBannersForDate(selDate)}
+
+          <!-- PRZEŁĄCZNIK TRYBU PLANOWANIA DNIA -->
+          <section class="ios-section">
+            <div class="ios-section-title">
+              <span>Plan dnia: ${escapeHtml(formatPolishFullDate(selDate))}</span>
+            </div>
+
+            <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px;">
+              <div class="ios-segmented cols-2" style="flex:1;">
+                <button
+                  type="button"
+                  data-action="set-planner-mode"
+                  data-mode="period"
+                  class="ios-segment-btn ${state.plannerMode === 'period' ? 'active' : ''}"
+                >
+                  Pory dnia
+                </button>
+                <button
+                  type="button"
+                  data-action="set-planner-mode"
+                  data-mode="time"
+                  class="ios-segment-btn ${state.plannerMode === 'time' ? 'active' : ''}"
+                >
+                  Godzinowy
+                </button>
+              </div>
+              <button type="button" data-action="open-planner-form" class="btn btn-primary" style="padding:9px 14px;">
+                + Dodaj wpis
+              </button>
+            </div>
+
+            <!-- FORMULARZ WPISU PLANERA -->
+            ${
+              state.plannerFormOpen && state.plannerForm
+                ? `
+              <form id="planner-entry-form" class="ios-card-padded" style="border-color:var(--ios-blue);">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                  <span style="font-size:12px; font-weight:700; text-transform:uppercase; color:var(--ios-blue);">
+                    ${state.plannerForm.isEdit ? 'Edytuj wpis w planie' : 'Nowy wpis w planie dnia'}
+                  </span>
+                  <button type="button" data-action="close-planner-form" style="font-size:12px; color:var(--text-secondary);">Zamknij ×</button>
+                </div>
+
+                <div style="display:flex; flex-direction:column; gap:10px;">
+                  <input
+                    type="text"
+                    id="pf-content"
+                    required
+                    placeholder="Co planujesz zrobić?"
+                    value="${escapeHtml(state.plannerForm.content)}"
+                    style="width:100%;"
+                  />
+                  <input
+                    type="text"
+                    id="pf-description"
+                    placeholder="Opcjonalny opis lub szczegóły..."
+                    value="${escapeHtml(state.plannerForm.description)}"
+                    style="width:100%;"
+                  />
+
+                  ${
+                    state.plannerMode === 'period'
+                      ? `<div class="ios-segmented cols-3">
+                          ${periodsMeta
+                            .map(
+                              (p) => `
+                            <button
+                              type="button"
+                              data-action="pf-set-period"
+                              data-period="${p.id}"
+                              class="ios-segment-btn ${state.plannerForm.timeOfDay === p.id ? 'active' : ''}"
+                            >${p.label}</button>
+                          `
+                            )
+                            .join('')}
+                        </div>`
+                      : `<div style="display:flex; align-items:center; justify-content:space-between; gap:10px;">
+                          <label for="pf-time" style="font-size:13px; font-weight:600;">Godzina wykonania:</label>
+                          <input id="pf-time" type="time" value="${escapeHtml(state.plannerForm.time)}" />
+                        </div>`
+                  }
+
+                  ${
+                    activeHabits.length > 0
+                      ? `<div style="display:flex; align-items:center; justify-content:space-between; gap:10px;">
+                          <label for="pf-linked-habit" style="font-size:12px; color:var(--text-secondary);">Powiąż z nawykiem (opcjonalnie):</label>
+                          <select id="pf-linked-habit" style="max-width:200px;">
+                            <option value="">Brak powiązania</option>
+                            ${activeHabits
+                              .map(
+                                (h) => `
+                              <option value="${escapeHtml(h.id)}" ${state.plannerForm.linkedHabitId === h.id ? 'selected' : ''}>
+                                ${escapeHtml(h.name)}
+                              </option>
+                            `
+                              )
+                              .join('')}
+                          </select>
+                        </div>`
+                      : ''
+                  }
+
+                  <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:4px;">
+                    <button type="button" data-action="close-planner-form" class="btn btn-secondary">Anuluj</button>
+                    <button type="submit" class="btn btn-primary">Zapisz wpis</button>
+                  </div>
+                </div>
+              </form>
+            `
+                : ''
+            }
+
+            <!-- LISTA WPISÓW PLANERA -->
+            ${
+              dayEntries.length === 0
+                ? `
+              <div class="ios-card-padded" style="text-align:center; padding:28px 16px;">
+                <p style="font-size:15px; font-weight:700; margin-bottom:4px;">Brak wpisów w planie na ten dzień</p>
+                <p style="font-size:12px; color:var(--text-secondary); max-width:290px; margin:0 auto 14px auto;">
+                  Zaplanuj zadania według pór dnia (Rano, Popołudnie, Wieczór) lub konkretnych godzin.
+                </p>
+                <button type="button" data-action="open-planner-form" class="btn btn-secondary" style="color:var(--ios-blue);">
+                  + Zaplanuj ten dzień
+                </button>
+              </div>
+            `
+                : state.plannerMode === 'period'
+                ? periodsMeta
+                    .map((per) => {
+                      const items = dayEntries.filter((e) => (e.timeOfDay || 'morning') === per.id);
+                      return `
+                        <div class="ios-card">
+                          <div class="ios-row" style="background:var(--bg-subtle); padding:10px 16px;">
+                            <span style="font-size:13px; font-weight:700;">${per.label} (${items.length})</span>
+                            <button
+                              type="button"
+                              data-action="open-planner-form-period"
+                              data-period="${per.id}"
+                              style="font-size:12px; font-weight:700; color:var(--ios-blue);"
+                            >+ Dodaj</button>
+                          </div>
+                          ${
+                            items.length === 0
+                              ? `<div class="ios-row"><span style="font-size:12px; color:var(--text-muted);">Brak wpisów na tę porę dnia.</span></div>`
+                              : items
+                                  .map((entry, idx) => {
+                                    const linked = state.habits.find((h) => h.id === entry.linkedHabitId);
+                                    return `
+                                      <div class="ios-row">
+                                        <button
+                                          type="button"
+                                          data-action="toggle-planner-done"
+                                          data-entry-id="${escapeHtml(entry.id)}"
+                                          class="habit-check-btn ${entry.done ? 'completed' : ''}"
+                                          style="width:24px; height:24px; border-radius:7px;"
+                                        >✓</button>
+                                        <div class="row-info">
+                                          <div class="row-title" style="${entry.done ? 'text-decoration:line-through; color:var(--text-muted);' : ''}">
+                                            ${escapeHtml(entry.content)}
+                                          </div>
+                                          ${entry.description ? `<div class="row-subtitle">${escapeHtml(entry.description)}</div>` : ''}
+                                          ${linked ? `<div style="margin-top:4px;"><span class="pill pill-blue">Nawyk: ${escapeHtml(linked.name)}</span></div>` : ''}
+                                        </div>
+                                        <div class="row-actions">
+                                          <button type="button" ${idx === 0 ? 'disabled' : ''} data-action="move-planner-entry" data-entry-id="${escapeHtml(entry.id)}" data-dir="-1" style="padding:4px;">↑</button>
+                                          <button type="button" ${idx === items.length - 1 ? 'disabled' : ''} data-action="move-planner-entry" data-entry-id="${escapeHtml(entry.id)}" data-dir="1" style="padding:4px;">↓</button>
+                                          <button type="button" data-action="edit-planner-entry" data-entry-id="${escapeHtml(entry.id)}" class="btn btn-secondary" style="padding:5px 9px; font-size:11px;">Edytuj</button>
+                                          <button type="button" data-action="delete-planner-entry" data-entry-id="${escapeHtml(entry.id)}" class="btn-icon-x" style="width:28px; height:28px;">×</button>
+                                        </div>
+                                      </div>
+                                    `;
+                                  })
+                                  .join('')
+                          }
+                        </div>
+                      `;
+                    })
+                    .join('')
+                : `
+              <div class="ios-card">
+                ${dayEntries
+                  .map((entry) => {
+                    const linked = state.habits.find((h) => h.id === entry.linkedHabitId);
+                    return `
+                      <div class="ios-row">
+                        <button
+                          type="button"
+                          data-action="toggle-planner-done"
+                          data-entry-id="${escapeHtml(entry.id)}"
+                          class="habit-check-btn ${entry.done ? 'completed' : ''}"
+                          style="width:24px; height:24px; border-radius:7px;"
+                        >✓</button>
+                        <span class="pill pill-blue" style="font-size:12px;">${escapeHtml(entry.time || '--:--')}</span>
+                        <div class="row-info">
+                          <div class="row-title" style="${entry.done ? 'text-decoration:line-through; color:var(--text-muted);' : ''}">
+                            ${escapeHtml(entry.content)}
+                          </div>
+                          ${entry.description ? `<div class="row-subtitle">${escapeHtml(entry.description)}</div>` : ''}
+                          ${linked ? `<div style="margin-top:4px;"><span class="pill pill-neutral">Nawyk: ${escapeHtml(linked.name)}</span></div>` : ''}
+                        </div>
+                        <div class="row-actions">
+                          <button type="button" data-action="edit-planner-entry" data-entry-id="${escapeHtml(entry.id)}" class="btn btn-secondary" style="padding:5px 9px; font-size:11px;">Edytuj</button>
+                          <button type="button" data-action="delete-planner-entry" data-entry-id="${escapeHtml(entry.id)}" class="btn-icon-x" style="width:28px; height:28px;">×</button>
+                        </div>
+                      </div>
+                    `;
+                  })
+                  .join('')}
+              </div>
+            `
+            }
+          </section>
+        </div>
+      `;
+    }
+
+    function renderSettingsView() {
+      const s = state.settings;
+      const darkActive = isDarkActive();
+      const env = getNotificationEnvironmentStatus();
+
+      let permLabel = 'Niewspierane w tej przeglądarce';
+      if (env.permission === 'granted') permLabel = 'Przyznano zgodę (Aktywne)';
+      else if (env.permission === 'denied') permLabel = 'Zablokowane w ustawieniach';
+      else if (env.permission === 'default') permLabel = 'Domyślne (wymaga włączenia)';
+
+      const sortedPeriods = [...state.periods].sort((a, b) => a.startDate.localeCompare(b.startDate));
+
+      return `
+        <div>
+          <!-- 1. WYGLĄD I MOTYW -->
+          <section class="ios-section">
+            <div class="ios-section-title">
+              <span>1. Wygląd i motyw</span>
+              <span>${darkActive ? 'Ciemny' : 'Jasny'}</span>
+            </div>
+            <div class="ios-card">
+              <div class="ios-row-stack">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                  <span class="row-title">Motyw kolorystyczny</span>
+                  <span style="font-size:12px; color:var(--text-secondary);">
+                    ${s.theme === 'system' ? 'Automatyczny (iOS)' : s.theme === 'dark' ? 'Ciemny' : 'Jasny'}
+                  </span>
+                </div>
+                <div class="ios-segmented cols-3">
+                  <button type="button" data-action="set-theme" data-theme="system" class="ios-segment-btn ${s.theme === 'system' ? 'active' : ''}">Systemowy</button>
+                  <button type="button" data-action="set-theme" data-theme="light" class="ios-segment-btn ${s.theme === 'light' ? 'active' : ''}">☀ Jasny</button>
+                  <button type="button" data-action="set-theme" data-theme="dark" class="ios-segment-btn ${s.theme === 'dark' ? 'active' : ''}">☾ Ciemny</button>
+                </div>
+              </div>
+
+              <div class="ios-row">
+                <div class="row-info">
+                  <div class="row-title">Tryb ciemny</div>
+                  <div class="row-subtitle">Szybkie przełączenie widoku jasny / ciemny</div>
+                </div>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked="${darkActive}"
+                  data-action="toggle-dark-mode-switch"
+                  class="ios-switch ${darkActive ? 'on' : ''}"
+                >
+                  <span class="ios-switch-thumb"></span>
+                </button>
+              </div>
+            </div>
+          </section>
+
+          <!-- 2. PREFERENCJE KALENDARZA I ZACHOWANIA -->
+          <section class="ios-section">
+            <div class="ios-section-title">
+              <span>2. Preferencje kalendarza</span>
+            </div>
+            <div class="ios-card">
+              <div class="ios-row-stack">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                  <span class="row-title">Początek tygodnia</span>
+                  <span style="font-size:12px; color:var(--text-secondary);">
+                    ${Number(s.weekStartsOn) === 1 ? 'Poniedziałek' : 'Niedziela'}
+                  </span>
+                </div>
+                <div class="ios-segmented cols-2">
+                  <button type="button" data-action="set-week-start" data-day="1" class="ios-segment-btn ${Number(s.weekStartsOn) === 1 ? 'active' : ''}">Poniedziałek</button>
+                  <button type="button" data-action="set-week-start" data-day="0" class="ios-segment-btn ${Number(s.weekStartsOn) === 0 ? 'active' : ''}">Niedziela</button>
+                </div>
+              </div>
+
+              <div class="ios-row">
+                <div class="row-info">
+                  <div class="row-title">Pokazuj okresy (np. wyjazdy) na siatce kalendarza</div>
+                  <div class="row-subtitle">Kolorowe tło dni podczas urlopu, wyjazdu lub choroby</div>
+                </div>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked="${s.showPeriodsOnCalendar !== false}"
+                  data-action="toggle-show-periods"
+                  class="ios-switch ${s.showPeriodsOnCalendar !== false ? 'on' : ''}"
+                >
+                  <span class="ios-switch-thumb"></span>
+                </button>
+              </div>
+
+              <div class="ios-row">
+                <div class="row-info">
+                  <div class="row-title">Alerty „Nie pomijaj dwa razy z rzędu”</div>
+                  <div class="row-subtitle">Pokazuj przypomnienie „Nie przerywaj rytmu” po 1 pominięciu</div>
+                </div>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked="${s.neverMissTwiceAlerts !== false}"
+                  data-action="toggle-never-miss-twice"
+                  class="ios-switch ${s.neverMissTwiceAlerts !== false ? 'on' : ''}"
+                >
+                  <span class="ios-switch-thumb"></span>
+                </button>
+              </div>
+            </div>
+          </section>
+
+          <!-- 3. ZARZĄDZANIE NAWYKAMI (Z KRZYŻYKIEM × DO USUWANIA) -->
+          <section class="ios-section">
+            <div class="ios-section-title">
+              <span>3. Zarządzanie nawykami (${state.habits.length})</span>
+              <button type="button" data-action="open-add-habit" style="text-transform:none; color:var(--ios-blue); font-weight:700;">
+                + Dodaj nawyk
+              </button>
+            </div>
+            <div class="ios-card">
+              ${
+                state.habits.length === 0
+                  ? `<div class="ios-row">
+                      <div class="row-info">
+                        <div class="row-subtitle">Brak zapisanych nawyków.</div>
+                      </div>
+                      <button type="button" data-action="open-add-habit" class="btn btn-primary">+ Dodaj</button>
+                    </div>`
+                  : state.habits
+                      .map((h) => {
+                        const confirming = state.inlineDeleteHabitId === h.id;
+                        return `
+                          <div class="ios-row">
+                            <div class="row-info">
+                              <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+                                <span class="row-title">${escapeHtml(h.name)}</span>
+                                ${h.important ? `<span class="pill pill-blue">Ważny</span>` : ''}
+                                ${h.status === 'paused' ? `<span class="pill pill-amber">Wstrzymany</span>` : ''}
+                                ${h.status === 'archived' ? `<span class="pill pill-neutral">Archiwum</span>` : ''}
+                              </div>
+                              <div class="row-subtitle">
+                                ${escapeHtml(formatScheduleLabel(h.schedule))}${h.executionTime ? ` • ${escapeHtml(h.executionTime)}` : ''}
+                              </div>
+                            </div>
+
+                            <div class="row-actions">
+                              ${
+                                confirming
+                                  ? `
+                                <span style="font-size:12px; font-weight:700; color:var(--ios-red);">Usunąć?</span>
+                                <button type="button" data-action="inline-confirm-delete-habit" data-habit-id="${escapeHtml(h.id)}" class="btn btn-danger" style="padding:6px 10px; font-size:12px;">
+                                  Tak, usuń
+                                </button>
+                                <button type="button" data-action="inline-cancel-delete-habit" class="btn btn-secondary" style="padding:6px 10px; font-size:12px;">
+                                  Anuluj
+                                </button>
+                              `
+                                  : `
+                                <button type="button" data-action="edit-habit" data-habit-id="${escapeHtml(h.id)}" class="btn btn-secondary" style="padding:7px 12px; font-size:12px;">
+                                  Edytuj
+                                </button>
+                                <button
+                                  type="button"
+                                  data-action="inline-ask-delete-habit"
+                                  data-habit-id="${escapeHtml(h.id)}"
+                                  aria-label="Usuń nawyk ${escapeHtml(h.name)}"
+                                  title="Usuń nawyk"
+                                  class="btn-icon-x"
+                                >×</button>
+                              `
+                              }
+                            </div>
+                          </div>
+                        `;
+                      })
+                      .join('')
+              }
+            </div>
+          </section>
+
+          <!-- 4. OZNACZONE OKRESY W KALENDARZU (WYJAZDY, URLOPY, CHOROBY) -->
+          <section class="ios-section">
+            <div class="ios-section-title">
+              <span>4. Oznaczone okresy w kalendarzu (${sortedPeriods.length})</span>
+              <button type="button" data-action="open-period-modal" style="text-transform:none; color:var(--ios-blue); font-weight:700;">
+                + Dodaj okres
+              </button>
+            </div>
+            <div class="ios-card">
+              ${
+                sortedPeriods.length === 0
+                  ? `<div class="ios-row">
+                      <div class="row-info">
+                        <div class="row-title">Brak oznaczonych okresów</div>
+                        <div class="row-subtitle">Zaznacz w tle kalendarza np. wyjazd (26–28.10), urlop lub chorobę.</div>
+                      </div>
+                      <button type="button" data-action="open-period-modal" class="btn btn-amber">+ Oznacz okres</button>
+                    </div>`
+                  : sortedPeriods
+                      .map((p) => {
+                        const meta = getPeriodColorMeta(p.color);
+                        const confirming = state.inlineDeletePeriodId === p.id;
+                        return `
+                          <div class="ios-row">
+                            <div class="row-info">
+                              <div style="display:flex; align-items:center; gap:8px;">
+                                <span style="width:10px; height:10px; border-radius:50%; background:${meta.hex}; flex-shrink:0;"></span>
+                                <span class="row-title">${escapeHtml(p.name)}</span>
+                              </div>
+                              <div class="row-subtitle">
+                                ${p.startDate} → ${p.endDate}${p.note ? ` • ${escapeHtml(p.note)}` : ''}
+                              </div>
+                            </div>
+                            <div class="row-actions">
+                              ${
+                                confirming
+                                  ? `
+                                <button type="button" data-action="inline-confirm-delete-period" data-period-id="${escapeHtml(p.id)}" class="btn btn-danger" style="padding:6px 10px; font-size:12px;">
+                                  Tak, usuń
+                                </button>
+                                <button type="button" data-action="inline-cancel-delete-period" class="btn btn-secondary" style="padding:6px 10px; font-size:12px;">
+                                  Anuluj
+                                </button>
+                              `
+                                  : `
+                                <button type="button" data-action="edit-period" data-period-id="${escapeHtml(p.id)}" class="btn btn-secondary" style="padding:7px 12px; font-size:12px;">
+                                  Edytuj
+                                </button>
+                                <button type="button" data-action="inline-ask-delete-period" data-period-id="${escapeHtml(p.id)}" class="btn-icon-x" title="Usuń okres">×</button>
+                              `
+                              }
+                            </div>
+                          </div>
+                        `;
+                      })
+                      .join('')
+              }
+            </div>
+          </section>
+
+          <!-- 5. POWIADOMIENIA LOKALNE -->
+          <section class="ios-section">
+            <div class="ios-section-title">
+              <span>5. Powiadomienia i przypomnienia</span>
+            </div>
+            <div class="ios-card">
+              <div class="ios-row">
+                <div class="row-info">
+                  <div class="row-title">Aktywuj przypomnienia lokalne</div>
+                  <div class="row-subtitle">Stan uprawnień: <strong>${escapeHtml(permLabel)}</strong></div>
+                </div>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked="${Boolean(s.notificationsEnabled && env.permission === 'granted')}"
+                  data-action="toggle-global-notifications"
+                  class="ios-switch ${s.notificationsEnabled && env.permission === 'granted' ? 'on' : ''}"
+                >
+                  <span class="ios-switch-thumb"></span>
+                </button>
+              </div>
+              <div class="ios-row-stack">
+                <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                  <button type="button" data-action="request-notifications" class="btn btn-primary" style="flex:1;">
+                    Poproś o zgodę
+                  </button>
+                  <button type="button" data-action="test-notification" class="btn btn-secondary" style="flex:1;">
+                    Wyślij test
+                  </button>
+                </div>
+                <div class="row-subtitle">${escapeHtml(env.backgroundPushNote)}</div>
+              </div>
+            </div>
+          </section>
+
+          <!-- 6. EKSPORT DANYCH, CSV, KOPIA ZAPASOWA I CZYSZCZENIE BAZY -->
+          <section class="ios-section">
+            <div class="ios-section-title">
+              <span>6. Eksport danych, CSV i kopia zapasowa</span>
+            </div>
+            <div class="ios-card">
+              <div class="ios-row-stack">
+                <div class="row-title">Kopia zapasowa całej aplikacji (JSON)</div>
+                <div class="row-subtitle">
+                  Dane są zapisywane lokalnie w IndexedDB na Twoim urządzeniu. Pobierz plik JSON lub odtwórz dane z kopii.
+                </div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+                  <button type="button" data-action="export-json" class="btn btn-secondary">⬇ Eksportuj JSON</button>
+                  <button type="button" data-action="import-json-trigger" class="btn btn-secondary">⬆ Importuj JSON</button>
+                </div>
+
+                ${
+                  state.pendingBackupImport
+                    ? `
+                  <div style="padding:12px; border-radius:12px; background:var(--ios-amber-soft); border:1px solid var(--ios-amber);">
+                    <div style="font-size:13px; font-weight:700; margin-bottom:4px;">Potwierdź odtworzenie kopii JSON</div>
+                    <div style="font-size:12px; margin-bottom:10px;">
+                      Plik zawiera: <strong>${state.pendingBackupImport.habits.length}</strong> nawyków,
+                      <strong>${state.pendingBackupImport.completions.length}</strong> wykonań oraz
+                      <strong>${(state.pendingBackupImport.periods || []).length}</strong> okresów.
+                    </div>
+                    <div style="display:flex; gap:8px;">
+                      <button type="button" data-action="cancel-import-json" class="btn btn-secondary" style="flex:1;">Anuluj</button>
+                      <button type="button" data-action="confirm-import-json" class="btn btn-primary" style="flex:1;">Zastąp i odtwórz</button>
+                    </div>
+                  </div>
+                `
+                    : ''
+                }
+              </div>
+
+              <div class="ios-row-stack">
+                <div class="row-title">Eksport tabel do arkusza CSV (Excel / Numbers)</div>
+                <div class="row-subtitle">Pliki CSV z kodowaniem UTF-8 BOM i separatorem średnika (;).</div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+                  <button type="button" data-action="export-csv-habits" class="btn btn-secondary">📊 CSV: Nawyki i historia</button>
+                  <button type="button" data-action="export-csv-planner" class="btn btn-secondary">📅 CSV: Planer i okresy</button>
+                </div>
+              </div>
+
+              <div class="ios-row-stack">
+                <div class="row-title" style="color:var(--ios-red);">Czyszczenie wszystkich danych</div>
+                <div class="row-subtitle">Usuwa wszystkie nawyki, historię, wpisy planera i oznaczone okresy z tego urządzenia.</div>
+                ${
+                  !state.confirmClearAllData
+                    ? `<button type="button" data-action="ask-clear-all-data" class="btn btn-danger-soft" style="width:100%;">
+                        🗑 Wyczyść wszystkie dane z bazy
+                      </button>`
+                    : `<div style="padding:12px; border-radius:12px; background:var(--ios-red-soft); border:1px solid var(--ios-red);">
+                        <div style="font-size:13px; font-weight:700; color:var(--ios-red); margin-bottom:8px;">
+                          Czy na pewno chcesz bezpowrotnie wyczyścić całą bazę danych?
+                        </div>
+                        <div style="display:flex; gap:8px;">
+                          <button type="button" data-action="cancel-clear-all-data" class="btn btn-secondary" style="flex:1;">Anuluj</button>
+                          <button type="button" data-action="confirm-clear-all-data" class="btn btn-danger" style="flex:1;">Tak, wyczyść wszystko</button>
+                        </div>
+                      </div>`
+                }
+              </div>
+            </div>
+          </section>
+
+          <!-- 7. DIAGNOSTYKA I TESTY JEDNOSTKOWE -->
+          <section class="ios-section">
+            <div class="ios-section-title">
+              <span>7. Diagnostyka i testy (20 scenariuszy)</span>
+            </div>
+            <div class="ios-card">
+              <div class="ios-row">
+                <div class="row-info">
+                  <div class="row-title">Weryfikacja silnika aplikacji</div>
+                  <div class="row-subtitle">Sprawdza harmonogramy, serie, zasadę dwóch pominięć i okresy</div>
+                </div>
+                <div class="row-actions">
+                  <button type="button" data-action="run-unit-tests" class="btn btn-primary" style="padding:7px 12px; font-size:12px;">
+                    Uruchom testy (20)
+                  </button>
+                  ${
+                    state.unitTestResults
+                      ? `<button type="button" data-action="hide-unit-tests" class="btn btn-secondary" style="padding:7px 11px; font-size:12px;">
+                          Ukryj wyniki ×
+                        </button>`
+                      : ''
+                  }
+                </div>
+              </div>
+
+              ${
+                state.unitTestResults
+                  ? `<div class="ios-row-stack">
+                      <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <span style="font-size:12px; font-weight:700; color:var(--ios-green);">
+                          Zaliczone: ${state.unitTestResults.filter((r) => r.passed).length} / ${state.unitTestResults.length}
+                        </span>
+                        <button type="button" data-action="hide-unit-tests" style="font-size:12px; font-weight:600; color:var(--ios-blue);">
+                          Zamknij listę ×
+                        </button>
+                      </div>
+                      <div style="display:flex; flex-direction:column; gap:6px; max-height:260px; overflow-y:auto;">
+                        ${state.unitTestResults
+                          .map(
+                            (r) => `
+                          <div style="font-size:12px; display:flex; align-items:center; gap:6px;">
+                            <span style="color:${r.passed ? 'var(--ios-green)' : 'var(--ios-red)'}; font-weight:700;">
+                              ${r.passed ? '✓' : '✗'}
+                            </span>
+                            <span>${escapeHtml(r.name)}</span>
+                          </div>
+                        `
+                          )
+                          .join('')}
+                      </div>
+                    </div>`
+                  : ''
+              }
+            </div>
+          </section>
+        </div>
+      `;
+    }
+
+    function renderHabitModal() {
+      if (!state.habitModalOpen || !state.habitForm) return '';
+      const f = state.habitForm;
+      const isFirst = state.habits.length === 0 && !f.isEdit;
+
+      return `
+        <div class="modal-backdrop" role="dialog" aria-modal="true">
+          <div class="modal-sheet">
+            <div class="modal-topbar">
+              <button type="button" data-action="close-habit-modal" style="font-size:14px; color:var(--text-secondary);">Anuluj</button>
+              <span style="font-size:16px; font-weight:700;">${f.isEdit ? 'Edytuj nawyk' : 'Nowy nawyk'}</span>
+              <button type="button" data-action="save-habit-modal" style="font-size:14px; font-weight:700; color:var(--ios-blue);">Zapisz</button>
+            </div>
+
+            <div class="modal-body">
+              ${
+                f.error
+                  ? `<div style="padding:10px 12px; border-radius:12px; background:var(--ios-red-soft); color:var(--ios-red); font-size:12px; font-weight:600; margin-bottom:12px;">
+                      ${escapeHtml(f.error)}
+                    </div>`
+                  : ''
+              }
+
+              ${
+                isFirst
+                  ? `<div style="margin-bottom:14px;">
+                      <div style="font-size:11px; font-weight:600; color:var(--text-secondary); margin-bottom:6px;">
+                        Szybkie propozycje na start (dotknij, aby wypełnić):
+                      </div>
+                      <div style="display:flex; flex-wrap:wrap; gap:6px;">
+                        ${STARTER_SUGGESTIONS.map(
+                          (s, i) => `
+                          <button type="button" data-action="apply-habit-suggestion" data-index="${i}" class="pill pill-blue" style="padding:6px 10px; font-size:12px;">
+                            + ${escapeHtml(s.name)}
+                          </button>
+                        `
+                        ).join('')}
+                      </div>
+                    </div>`
+                  : ''
+              }
+
+              <div class="ios-card">
+                <div class="ios-row-stack">
+                  <label for="hm-name" style="font-size:12px; font-weight:600; color:var(--text-secondary);">NAZWA NAWYKU *</label>
+                  <input id="hm-name" type="text" placeholder="np. 20 minut czytania, Trening..." value="${escapeHtml(f.name)}" style="width:100%;" />
+                </div>
+
+                <div class="ios-row-stack">
+                  <span style="font-size:12px; font-weight:600; color:var(--text-secondary);">CZĘSTOTLIWOŚĆ *</span>
+                  <div class="ios-segmented cols-3">
+                    <button type="button" data-action="hm-set-schedule" data-type="daily" class="ios-segment-btn ${f.scheduleType === 'daily' ? 'active' : ''}">Codziennie</button>
+                    <button type="button" data-action="hm-set-schedule" data-type="specific_days" class="ios-segment-btn ${f.scheduleType === 'specific_days' ? 'active' : ''}">Wybrane dni</button>
+                    <button type="button" data-action="hm-set-schedule" data-type="times_per_week" class="ios-segment-btn ${f.scheduleType === 'times_per_week' ? 'active' : ''}">X w tygodniu</button>
+                  </div>
+
+                  ${
+                    f.scheduleType === 'specific_days'
+                      ? `<div class="days-7-grid" style="margin-top:6px;">
+                          ${DAY_LABELS_MON_FIRST.map(({ day, label }) => {
+                            const sel = f.daysOfWeek.includes(day);
+                            return `<button type="button" data-action="hm-toggle-day" data-day="${day}" class="day-pill-btn ${sel ? 'selected' : ''}">${label}</button>`;
+                          }).join('')}
+                        </div>`
+                      : ''
+                  }
+
+                  ${
+                    f.scheduleType === 'times_per_week'
+                      ? `<div style="display:flex; align-items:center; justify-content:space-between; margin-top:6px;">
+                          <span style="font-size:13px; font-weight:600;">Ile razy w tygodniu:</span>
+                          <div style="display:flex; gap:6px;">
+                            ${[1, 2, 3, 4, 5, 6]
+                              .map(
+                                (n) => `
+                              <button type="button" data-action="hm-set-times" data-times="${n}" class="day-pill-btn ${Number(f.timesPerWeek) === n ? 'selected' : ''}" style="width:34px; height:34px;">
+                                ${n}×
+                              </button>
+                            `
+                              )
+                              .join('')}
+                          </div>
+                        </div>`
+                      : ''
+                  }
+                </div>
+              </div>
+
+              <div class="ios-card">
+                <div class="ios-row">
+                  <div class="row-info">
+                    <div class="row-title">Godzina wykonania (opcjonalnie)</div>
+                    <div class="row-subtitle">Wyświetlana przy nawyku na liście Dzisiaj</div>
+                  </div>
+                  <input id="hm-exec-time" type="time" value="${escapeHtml(f.executionTime)}" />
+                </div>
+
+                <div class="ios-row">
+                  <div class="row-info">
+                    <div class="row-title">Ważny nawyk</div>
+                    <div class="row-subtitle">Subtelne wyróżnienie priorytetu na liście</div>
+                  </div>
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked="${f.important}"
+                    data-action="hm-toggle-important"
+                    class="ios-switch ${f.important ? 'on-blue' : ''}"
+                  >
+                    <span class="ios-switch-thumb"></span>
+                  </button>
+                </div>
+
+                <div class="ios-row">
+                  <div class="row-info">
+                    <div class="row-title">Przypomnienie</div>
+                    <div class="row-subtitle">Powiadomienie w zaplanowane dni</div>
+                  </div>
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked="${f.reminderEnabled}"
+                    data-action="hm-toggle-reminder"
+                    class="ios-switch ${f.reminderEnabled ? 'on' : ''}"
+                  >
+                    <span class="ios-switch-thumb"></span>
+                  </button>
+                </div>
+
+                ${
+                  f.reminderEnabled
+                    ? `<div class="ios-row">
+                        <span class="row-title">Godzina przypomnienia</span>
+                        <input id="hm-rem-time" type="time" value="${escapeHtml(f.reminderTime)}" />
+                      </div>`
+                    : ''
+                }
+
+                <div class="ios-row-stack">
+                  <label for="hm-note" style="font-size:12px; font-weight:600; color:var(--text-secondary);">KRÓTKA NOTATKA (OPCJONALNIE)</label>
+                  <input id="hm-note" type="text" placeholder="np. Po porannej kawie" value="${escapeHtml(f.note)}" style="width:100%;" />
+                </div>
+              </div>
+
+              ${
+                f.isEdit
+                  ? `<div class="ios-card">
+                      <div class="ios-row">
+                        <button type="button" data-action="hm-toggle-pause" class="btn btn-secondary" style="flex:1;">
+                          ${f.status === 'paused' ? '▶ Wznów nawyk' : '⏸ Wstrzymaj tymczasowo'}
+                        </button>
+                        <button type="button" data-action="hm-toggle-archive" class="btn btn-secondary" style="flex:1;">
+                          ${f.status === 'archived' ? 'Przywróć z archiwum' : '📦 Archiwizuj'}
+                        </button>
+                      </div>
+                      <div class="ios-row-stack">
+                        ${
+                          !f.confirmDelete
+                            ? `<button type="button" data-action="hm-ask-delete" class="btn btn-danger-soft" style="width:100%;">
+                                × Usuń nawyk oraz jego historię
+                              </button>`
+                            : `<div style="display:flex; gap:8px;">
+                                <button type="button" data-action="hm-cancel-delete" class="btn btn-secondary" style="flex:1;">Anuluj</button>
+                                <button type="button" data-action="hm-confirm-delete" data-habit-id="${escapeHtml(f.id)}" class="btn btn-danger" style="flex:1;">Potwierdź usunięcie</button>
+                              </div>`
+                        }
+                      </div>
+                    </div>`
+                  : ''
+              }
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderPeriodModal() {
+      if (!state.periodModalOpen || !state.periodForm) return '';
+      const pf = state.periodForm;
+
+      return `
+        <div class="modal-backdrop" role="dialog" aria-modal="true">
+          <div class="modal-sheet">
+            <div class="modal-topbar">
+              <button type="button" data-action="close-period-modal" style="font-size:14px; color:var(--text-secondary);">Anuluj</button>
+              <span style="font-size:16px; font-weight:700;">${pf.isEdit ? 'Edytuj okres' : 'Oznacz okres w kalendarzu'}</span>
+              <button type="button" data-action="save-period-modal" style="font-size:14px; font-weight:700; color:var(--ios-blue);">Zapisz</button>
+            </div>
+
+            <div class="modal-body">
+              ${
+                pf.error
+                  ? `<div style="padding:10px 12px; border-radius:12px; background:var(--ios-red-soft); color:var(--ios-red); font-size:12px; font-weight:600; margin-bottom:12px;">
+                      ${escapeHtml(pf.error)}
+                    </div>`
+                  : ''
+              }
+
+              <div style="margin-bottom:12px;">
+                <div style="font-size:11px; font-weight:600; color:var(--text-secondary); margin-bottom:6px;">
+                  Szybki wybór tematu okresu:
+                </div>
+                <div style="display:flex; flex-wrap:wrap; gap:6px;">
+                  ${PERIOD_PRESETS.map(
+                    (pr) => `
+                    <button
+                      type="button"
+                      data-action="apply-period-preset"
+                      data-name="${escapeHtml(pr.name)}"
+                      data-color="${pr.color}"
+                      class="pill ${getPeriodColorMeta(pr.color).badgeClass}"
+                      style="padding:6px 10px; font-size:12px;"
+                    >
+                      ${escapeHtml(pr.name)}
+                    </button>
+                  `
+                  ).join('')}
+                </div>
+              </div>
+
+              <div class="ios-card">
+                <div class="ios-row-stack">
+                  <label for="pm-name" style="font-size:12px; font-weight:600; color:var(--text-secondary);">NAZWA OKRESU (NP. WYJAZD, URLOP) *</label>
+                  <input id="pm-name" type="text" placeholder="np. Wyjazd w góry, Delegacja..." value="${escapeHtml(pf.name)}" style="width:100%;" />
+                </div>
+
+                <div class="ios-row">
+                  <label for="pm-start" class="row-title">Data początkowa (Od)</label>
+                  <input id="pm-start" type="date" value="${escapeHtml(pf.startDate)}" />
+                </div>
+
+                <div class="ios-row">
+                  <label for="pm-end" class="row-title">Data końcowa (Do)</label>
+                  <input id="pm-end" type="date" value="${escapeHtml(pf.endDate)}" />
+                </div>
+
+                <div class="ios-row-stack">
+                  <span style="font-size:12px; font-weight:600; color:var(--text-secondary);">KOLOR WSTĘGI W KALENDARZU</span>
+                  <div style="display:flex; flex-wrap:wrap; gap:8px;">
+                    ${Object.values(PERIOD_COLORS)
+                      .map(
+                        (c) => `
+                      <button
+                        type="button"
+                        data-action="pm-set-color"
+                        data-color="${c.id}"
+                        class="pill ${c.badgeClass}"
+                        style="padding:7px 11px; font-size:12px; ${pf.color === c.id ? 'outline:2px solid var(--text-primary);' : ''}"
+                      >
+                        <span style="width:9px; height:9px; border-radius:50%; background:${c.hex};"></span>
+                        ${c.label}
+                      </button>
+                    `
+                      )
+                      .join('')}
+                  </div>
+                </div>
+
+                <div class="ios-row-stack">
+                  <label for="pm-note" style="font-size:12px; font-weight:600; color:var(--text-secondary);">NOTATKA (OPCJONALNIE)</label>
+                  <input id="pm-note" type="text" placeholder="np. Brak dostępu do siłowni" value="${escapeHtml(pf.note)}" style="width:100%;" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderHabitDetailModal(completionMap) {
+      if (!state.detailHabitId) return '';
+      const habit = state.habits.find((h) => h.id === state.detailHabitId);
+      if (!habit) return '';
+
+      const todayStr = state.todayStr;
+      const weekStartsOn = state.settings.weekStartsOn;
+      const orderedDays = getOrderedWeekDays(weekStartsOn);
+
+      const stats = calculateHabitStats(
+        habit,
+        todayStr,
+        state.detailMonthYear.year,
+        state.detailMonthYear.month,
+        completionMap,
+        weekStartsOn
+      );
+
+      const cells = getCalendarGridDays(
+        state.detailMonthYear.year,
+        state.detailMonthYear.month,
+        weekStartsOn
+      );
+
+      return `
+        <div class="modal-backdrop" role="dialog" aria-modal="true">
+          <div class="modal-sheet">
+            <div class="modal-topbar">
+              <button type="button" data-action="close-habit-detail" style="font-size:14px; color:var(--text-secondary);">Zamknij</button>
+              <span style="font-size:14px; font-weight:700;">Historia nawyku</span>
+              <div style="display:flex; align-items:center; gap:8px;">
+                <button type="button" data-action="edit-habit" data-habit-id="${escapeHtml(habit.id)}" style="font-size:14px; font-weight:700; color:var(--ios-blue);">Edytuj</button>
+                <button type="button" data-action="detail-ask-delete" class="btn-icon-x" style="width:28px; height:28px;" title="Usuń nawyk">×</button>
+              </div>
+            </div>
+
+            <div class="modal-body">
+              ${
+                state.detailConfirmDelete
+                  ? `<div style="padding:12px; border-radius:14px; background:var(--ios-red-soft); border:1px solid var(--ios-red); margin-bottom:14px;">
+                      <div style="font-size:13px; font-weight:700; color:var(--ios-red); margin-bottom:8px;">
+                        Usunąć trwale nawyk „${escapeHtml(habit.name)}” wraz z historią?
+                      </div>
+                      <div style="display:flex; gap:8px;">
+                        <button type="button" data-action="detail-cancel-delete" class="btn btn-secondary" style="flex:1;">Anuluj</button>
+                        <button type="button" data-action="detail-confirm-delete" data-habit-id="${escapeHtml(habit.id)}" class="btn btn-danger" style="flex:1;">Tak, usuń</button>
+                      </div>
+                    </div>`
+                  : ''
+              }
+
+              <div style="margin-bottom:14px;">
+                <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                  <h2 style="font-size:20px; font-weight:700;">${escapeHtml(habit.name)}</h2>
+                  ${habit.important ? `<span class="pill pill-blue">Ważny</span>` : ''}
+                </div>
+                <p style="font-size:12px; color:var(--text-secondary); margin-top:2px;">
+                  Harmonogram: <strong>${escapeHtml(formatScheduleLabel(habit.schedule))}</strong>
+                  ${habit.executionTime ? ` • Godzina: ${escapeHtml(habit.executionTime)}` : ''}
+                </p>
+              </div>
+
+              <div class="stats-3-grid">
+                <div class="stat-box">
+                  <div class="stat-label">🔥 Bieżąca seria</div>
+                  <div class="stat-value">${stats.currentStreak}</div>
+                  <div class="stat-sub">okazji z rzędu</div>
+                </div>
+                <div class="stat-box">
+                  <div class="stat-label">🏆 Najlepsza</div>
+                  <div class="stat-value">${stats.bestStreak}</div>
+                  <div class="stat-sub">rekord</div>
+                </div>
+                <div class="stat-box">
+                  <div class="stat-label">📅 W miesiącu</div>
+                  <div class="stat-value">${stats.monthCompletionRate}%</div>
+                  <div class="stat-sub">${stats.monthCompletedCount}/${stats.monthScheduledCount} dni</div>
+                </div>
+              </div>
+
+              <div class="ios-card-padded" style="margin-bottom:0;">
+                <div class="calendar-header">
+                  <button type="button" data-action="detail-prev-month" class="calendar-nav-btn">‹</button>
+                  <span style="font-size:14px; font-weight:700;">
+                    ${escapeHtml(formatPolishMonthYear(state.detailMonthYear.year, state.detailMonthYear.month))}
+                  </span>
+                  <button type="button" data-action="detail-next-month" class="calendar-nav-btn">›</button>
+                </div>
+
+                <div class="calendar-grid">
+                  ${orderedDays.map((d) => `<div class="calendar-dow">${d.label}</div>`).join('')}
+                  ${cells
+                    .map(({ dateStr, inCurrentMonth }) => {
+                      const st = getHabitDayState(habit, dateStr, todayStr, completionMap, weekStartsOn);
+                      const dayNum = Number(dateStr.split('-')[2]);
+                      const ribbon = getPeriodRibbonInfo(dateStr);
+                      const canToggle = st !== 'future';
+
+                      let btnCls = 'cal-day-btn';
+                      if (!inCurrentMonth) btnCls += ' outside';
+                      if (st === 'completed') btnCls += ' habit-done';
+                      else if (st === 'missed') btnCls += ' habit-missed';
+                      else if (st === 'today_pending') btnCls += ' today';
+
+                      return `
+                        <div class="cal-cell-wrap ${ribbon ? `${ribbon.meta.bgClass} ${ribbon.shapeClass}` : ''}">
+                          ${ribbon ? `<span class="cal-period-top-bar ${ribbon.meta.barClass}" title="${escapeHtml(ribbon.period.name)}"></span>` : ''}
+                          <button
+                            type="button"
+                            ${!canToggle ? 'disabled' : ''}
+                            data-action="detail-toggle-date"
+                            data-habit-id="${escapeHtml(habit.id)}"
+                            data-date="${dateStr}"
+                            class="${btnCls}"
+                          >
+                            <span>${dayNum}</span>
+                          </button>
+                        </div>
+                      `;
+                    })
+                    .join('')}
+                </div>
+
+                <div style="display:flex; flex-wrap:wrap; gap:12px; margin-top:12px; font-size:11px; color:var(--text-secondary);">
+                  <span>🟢 Wykonany</span>
+                  <span>🔴 Zaległy</span>
+                  <span>🔵 Dzisiaj</span>
+                  <span>🟠 Wstęga = Oznaczony okres (np. wyjazd)</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderBottomNav() {
+      const t = state.activeTab;
+      return `
+        <nav class="bottom-nav" aria-label="Główna nawigacja">
+          <div class="bottom-nav-inner">
+            <button type="button" data-action="switch-tab" data-tab="today" class="nav-tab-btn ${t === 'today' ? 'active' : ''}">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${t === 'today' ? '2.4' : '1.9'}">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span>Dzisiaj</span>
+            </button>
+            <button type="button" data-action="switch-tab" data-tab="planner" class="nav-tab-btn ${t === 'planner' ? 'active' : ''}">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${t === 'planner' ? '2.4' : '1.9'}">
+                <rect x="3" y="4" width="18" height="18" rx="3" />
+                <path stroke-linecap="round" d="M16 2v4M8 2v4M3 10h18" />
+              </svg>
+              <span>Planer</span>
+            </button>
+            <button type="button" data-action="switch-tab" data-tab="settings" class="nav-tab-btn ${t === 'settings' ? 'active' : ''}">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${t === 'settings' ? '2.4' : '1.9'}">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+              <span>Ustawienia</span>
+            </button>
+          </div>
+        </nav>
+      `;
+    }
+
+    function renderApp() {
+      const root = document.getElementById('app');
+      if (!root) return;
+
+      const completionMap = buildCompletionMap(state.completions);
+
+      let mainHtml = '';
+      if (state.activeTab === 'today') {
+        mainHtml =
+          state.internalView === 'overall_history'
+            ? renderOverallHistoryView(completionMap)
+            : renderTodayView(completionMap);
+      } else if (state.activeTab === 'planner') {
+        mainHtml = renderPlannerView(completionMap);
+      } else {
+        mainHtml = renderSettingsView();
+      }
+
+      root.innerHTML = `
+        ${state.toast ? `<div class="toast-banner">${escapeHtml(state.toast)}</div>` : ''}
+        ${renderStickyHeader(completionMap)}
+        <main class="main-container">${mainHtml}</main>
+        ${renderBottomNav()}
+        ${renderHabitModal()}
+        ${renderPeriodModal()}
+        ${renderHabitDetailModal(completionMap)}
+      `;
+    }
+
+    /***********************************************************************
+     * 12. DELEGACJA ZDARZEŃ (OBSŁUGA WSZYSTKICH KLIKNIĘĆ I FORMULARZY)
+     ***********************************************************************/
+    function syncHabitModalInputs() {
+      const f = state.habitForm;
+      if (!f) return;
+      const nameEl = document.getElementById('hm-name');
+      const execEl = document.getElementById('hm-exec-time');
+      const remEl = document.getElementById('hm-rem-time');
+      const noteEl = document.getElementById('hm-note');
+      if (nameEl) f.name = nameEl.value;
+      if (execEl) f.executionTime = execEl.value;
+      if (remEl) f.reminderTime = remEl.value;
+      if (noteEl) f.note = noteEl.value;
+    }
+
+    function syncPeriodModalInputs() {
+      const pf = state.periodForm;
+      if (!pf) return;
+      const nEl = document.getElementById('pm-name');
+      const sEl = document.getElementById('pm-start');
+      const eEl = document.getElementById('pm-end');
+      const noteEl = document.getElementById('pm-note');
+      if (nEl) pf.name = nEl.value;
+      if (sEl) pf.startDate = sEl.value;
+      if (eEl) pf.endDate = eEl.value;
+      if (noteEl) pf.note = noteEl.value;
+    }
+
+    function syncPlannerFormInputs() {
+      const pf = state.plannerForm;
+      if (!pf) return;
+      const cEl = document.getElementById('pf-content');
+      const dEl = document.getElementById('pf-description');
+      const tEl = document.getElementById('pf-time');
+      const lEl = document.getElementById('pf-linked-habit');
+      if (cEl) pf.content = cEl.value;
+      if (dEl) pf.description = dEl.value;
+      if (tEl) pf.time = tEl.value;
+      if (lEl) pf.linkedHabitId = lEl.value;
+    }
+
+    document.addEventListener('click', async (e) => {
+      const btn = e.target.closest('[data-action]');
+      if (!btn) return;
+      const action = btn.getAttribute('data-action');
+
+      switch (action) {
+        case 'switch-tab': {
+          state.activeTab = btn.getAttribute('data-tab') || 'today';
+          state.internalView = null;
+          state.inlineDeleteHabitId = null;
+          state.inlineDeletePeriodId = null;
+          renderApp();
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+          break;
+        }
+        case 'open-overall-history':
+          state.internalView = 'overall_history';
+          renderApp();
+          break;
+        case 'close-overall-history':
+          state.internalView = null;
+          renderApp();
+          break;
+        case 'set-history-mode':
+          state.historyMode = btn.getAttribute('data-mode') || 'year';
+          renderApp();
+          break;
+        case 'select-history-date':
+          state.historySelectedDate = btn.getAttribute('data-date') || state.todayStr;
+          renderApp();
+          break;
+        case 'history-prev-month': {
+          const d = new Date(state.historyMonthYear.year, state.historyMonthYear.month - 1, 1, 12, 0, 0);
+          state.historyMonthYear = { year: d.getFullYear(), month: d.getMonth() };
+          renderApp();
+          break;
+        }
+        case 'history-next-month': {
+          const d = new Date(state.historyMonthYear.year, state.historyMonthYear.month + 1, 1, 12, 0, 0);
+          state.historyMonthYear = { year: d.getFullYear(), month: d.getMonth() };
+          renderApp();
+          break;
+        }
+        case 'toggle-habit-today': {
+          const hId = btn.getAttribute('data-habit-id');
+          if (hId) await toggleHabitCompletion(hId, state.todayStr);
+          break;
+        }
+        case 'open-add-habit':
+          openHabitModal(null);
+          break;
+        case 'edit-habit': {
+          const hId = btn.getAttribute('data-habit-id');
+          const h = state.habits.find((x) => x.id === hId);
+          state.detailHabitId = null;
+          if (h) openHabitModal(h);
+          break;
+        }
+        case 'close-habit-modal':
+          state.habitModalOpen = false;
+          state.habitForm = null;
+          renderApp();
+          break;
+        case 'save-habit-modal':
+          syncHabitModalInputs();
+          await saveHabitModalForm();
+          break;
+        case 'apply-habit-suggestion': {
+          syncHabitModalInputs();
+          const idx = Number(btn.getAttribute('data-index'));
+          const sug = STARTER_SUGGESTIONS[idx];
+          if (sug && state.habitForm) {
+            state.habitForm.name = sug.name;
+            state.habitForm.executionTime = sug.executionTime || '';
+            state.habitForm.scheduleType = sug.schedule.type;
+            if (sug.schedule.daysOfWeek) state.habitForm.daysOfWeek = [...sug.schedule.daysOfWeek];
+            if (sug.schedule.timesPerWeek) state.habitForm.timesPerWeek = sug.schedule.timesPerWeek;
+            state.habitForm.note = sug.note || '';
+            renderApp();
+          }
+          break;
+        }
+        case 'hm-set-schedule':
+          syncHabitModalInputs();
+          if (state.habitForm) {
+            state.habitForm.scheduleType = btn.getAttribute('data-type') || 'daily';
+            renderApp();
+          }
+          break;
+        case 'hm-toggle-day': {
+          syncHabitModalInputs();
+          const day = Number(btn.getAttribute('data-day'));
+          if (state.habitForm) {
+            const arr = state.habitForm.daysOfWeek || [];
+            state.habitForm.daysOfWeek = arr.includes(day)
+              ? arr.filter((d) => d !== day)
+              : [...arr, day];
+            renderApp();
+          }
+          break;
+        }
+        case 'hm-set-times':
+          syncHabitModalInputs();
+          if (state.habitForm) {
+            state.habitForm.timesPerWeek = Number(btn.getAttribute('data-times')) || 3;
+            renderApp();
+          }
+          break;
+        case 'hm-toggle-important':
+          syncHabitModalInputs();
+          if (state.habitForm) {
+            state.habitForm.important = !state.habitForm.important;
+            renderApp();
+          }
+          break;
+        case 'hm-toggle-reminder':
+          syncHabitModalInputs();
+          if (state.habitForm) {
+            const next = !state.habitForm.reminderEnabled;
+            if (next) {
+              const perm = await requestNotificationPermissionInteractive();
+              state.habitForm.reminderEnabled = perm.granted;
+              showToast(perm.message);
+            } else {
+              state.habitForm.reminderEnabled = false;
+            }
+            renderApp();
+          }
+          break;
+        case 'hm-toggle-pause':
+          syncHabitModalInputs();
+          if (state.habitForm) {
+            state.habitForm.status = state.habitForm.status === 'paused' ? 'active' : 'paused';
+            renderApp();
+          }
+          break;
+        case 'hm-toggle-archive':
+          syncHabitModalInputs();
+          if (state.habitForm) {
+            state.habitForm.status = state.habitForm.status === 'archived' ? 'active' : 'archived';
+            renderApp();
+          }
+          break;
+        case 'hm-ask-delete':
+          syncHabitModalInputs();
+          if (state.habitForm) {
+            state.habitForm.confirmDelete = true;
+            renderApp();
+          }
+          break;
+        case 'hm-cancel-delete':
+          syncHabitModalInputs();
+          if (state.habitForm) {
+            state.habitForm.confirmDelete = false;
+            renderApp();
+          }
+          break;
+        case 'hm-confirm-delete': {
+          const hId = btn.getAttribute('data-habit-id') || state.habitForm?.id;
+          await deleteHabitEverywhere(hId);
+          break;
+        }
+        case 'open-habit-detail': {
+          const hId = btn.getAttribute('data-habit-id');
+          const d = parseLocalDate(state.todayStr);
+          state.detailHabitId = hId;
+          state.detailConfirmDelete = false;
+          state.detailMonthYear = { year: d.getFullYear(), month: d.getMonth() };
+          renderApp();
+          break;
+        }
+        case 'close-habit-detail':
+          state.detailHabitId = null;
+          state.detailConfirmDelete = false;
+          renderApp();
+          break;
+        case 'detail-ask-delete':
+          state.detailConfirmDelete = true;
+          renderApp();
+          break;
+        case 'detail-cancel-delete':
+          state.detailConfirmDelete = false;
+          renderApp();
+          break;
+        case 'detail-confirm-delete': {
+          const hId = btn.getAttribute('data-habit-id') || state.detailHabitId;
+          await deleteHabitEverywhere(hId);
+          break;
+        }
+        case 'detail-prev-month': {
+          const d = new Date(state.detailMonthYear.year, state.detailMonthYear.month - 1, 1, 12, 0, 0);
+          state.detailMonthYear = { year: d.getFullYear(), month: d.getMonth() };
+          renderApp();
+          break;
+        }
+        case 'detail-next-month': {
+          const d = new Date(state.detailMonthYear.year, state.detailMonthYear.month + 1, 1, 12, 0, 0);
+          state.detailMonthYear = { year: d.getFullYear(), month: d.getMonth() };
+          renderApp();
+          break;
+        }
+        case 'detail-toggle-date': {
+          const hId = btn.getAttribute('data-habit-id');
+          const dStr = btn.getAttribute('data-date');
+          if (hId && dStr) await toggleHabitCompletion(hId, dStr);
+          break;
+        }
+        case 'inline-ask-delete-habit':
+          state.inlineDeleteHabitId = btn.getAttribute('data-habit-id');
+          renderApp();
+          break;
+        case 'inline-cancel-delete-habit':
+          state.inlineDeleteHabitId = null;
+          renderApp();
+          break;
+        case 'inline-confirm-delete-habit': {
+          const hId = btn.getAttribute('data-habit-id');
+          await deleteHabitEverywhere(hId);
+          break;
+        }
+        case 'open-period-modal':
+          openPeriodModal(null);
+          break;
+        case 'edit-period': {
+          const pId = btn.getAttribute('data-period-id');
+          const per = state.periods.find((p) => p.id === pId);
+          if (per) openPeriodModal(per);
+          break;
+        }
+        case 'close-period-modal':
+          state.periodModalOpen = false;
+          state.periodForm = null;
+          renderApp();
+          break;
+        case 'save-period-modal':
+          syncPeriodModalInputs();
+          await savePeriodModalForm();
+          break;
+        case 'apply-period-preset':
+          syncPeriodModalInputs();
+          if (state.periodForm) {
+            state.periodForm.name = btn.getAttribute('data-name') || 'Wyjazd';
+            state.periodForm.color = btn.getAttribute('data-color') || 'amber';
+            renderApp();
+          }
+          break;
+        case 'pm-set-color':
+          syncPeriodModalInputs();
+          if (state.periodForm) {
+            state.periodForm.color = btn.getAttribute('data-color') || 'amber';
+            renderApp();
+          }
+          break;
+        case 'delete-period-direct':
+        case 'inline-confirm-delete-period': {
+          const pId = btn.getAttribute('data-period-id');
+          await deletePeriodEverywhere(pId);
+          break;
+        }
+        case 'inline-ask-delete-period':
+          state.inlineDeletePeriodId = btn.getAttribute('data-period-id');
+          renderApp();
+          break;
+        case 'inline-cancel-delete-period':
+          state.inlineDeletePeriodId = null;
+          renderApp();
+          break;
+        case 'planner-prev-month': {
+          const d = new Date(state.plannerMonthYear.year, state.plannerMonthYear.month - 1, 1, 12, 0, 0);
+          state.plannerMonthYear = { year: d.getFullYear(), month: d.getMonth() };
+          renderApp();
+          break;
+        }
+        case 'planner-next-month': {
+          const d = new Date(state.plannerMonthYear.year, state.plannerMonthYear.month + 1, 1, 12, 0, 0);
+          state.plannerMonthYear = { year: d.getFullYear(), month: d.getMonth() };
+          renderApp();
+          break;
+        }
+        case 'planner-select-date':
+          state.plannerSelectedDate = btn.getAttribute('data-date') || state.todayStr;
+          renderApp();
+          break;
+        case 'planner-jump-today': {
+          const d = parseLocalDate(state.todayStr);
+          state.plannerSelectedDate = state.todayStr;
+          state.plannerMonthYear = { year: d.getFullYear(), month: d.getMonth() };
+          renderApp();
+          break;
+        }
+        case 'set-planner-mode':
+          state.plannerMode = btn.getAttribute('data-mode') || 'period';
+          renderApp();
+          break;
+        case 'open-planner-form':
+          openPlannerForm(null, 'morning');
+          break;
+        case 'open-planner-form-period':
+          openPlannerForm(null, btn.getAttribute('data-period') || 'morning');
+          break;
+        case 'close-planner-form':
+          state.plannerFormOpen = false;
+          state.plannerForm = null;
+          renderApp();
+          break;
+        case 'pf-set-period':
+          syncPlannerFormInputs();
+          if (state.plannerForm) {
+            state.plannerForm.timeOfDay = btn.getAttribute('data-period') || 'morning';
+            renderApp();
+          }
+          break;
+        case 'toggle-planner-done': {
+          const id = btn.getAttribute('data-entry-id');
+          const entry = state.plannerEntries.find((x) => x.id === id);
+          if (entry) {
+            entry.done = !entry.done;
+            entry.updatedAt = Date.now();
+            await dbPut('planner_entries', entry);
+            renderApp();
+          }
+          break;
+        }
+        case 'edit-planner-entry': {
+          const id = btn.getAttribute('data-entry-id');
+          const entry = state.plannerEntries.find((x) => x.id === id);
+          if (entry) openPlannerForm(entry);
+          break;
+        }
+        case 'delete-planner-entry': {
+          const id = btn.getAttribute('data-entry-id');
+          if (id) {
+            await dbDelete('planner_entries', id);
+            state.plannerEntries = state.plannerEntries.filter((x) => x.id !== id);
+            renderApp();
+          }
+          break;
+        }
+        case 'move-planner-entry': {
+          const id = btn.getAttribute('data-entry-id');
+          const dir = Number(btn.getAttribute('data-dir')) || -1;
+          const entry = state.plannerEntries.find((x) => x.id === id);
+          if (entry) {
+            const list = state.plannerEntries
+              .filter((x) => x.date === state.plannerSelectedDate && (x.timeOfDay || 'morning') === (entry.timeOfDay || 'morning'))
+              .sort((a, b) => (a.order || 0) - (b.order || 0));
+            const idx = list.findIndex((x) => x.id === id);
+            const swapIdx = idx + dir;
+            if (idx >= 0 && swapIdx >= 0 && swapIdx < list.length) {
+              const a = list[idx];
+              const b = list[swapIdx];
+              const tmp = a.order || idx;
+              a.order = b.order || swapIdx;
+              b.order = tmp;
+              await dbSavePlannerBatch([a, b]);
+              renderApp();
+            }
+          }
+          break;
+        }
+        case 'set-theme':
+          await updateSettings({ theme: btn.getAttribute('data-theme') || 'system' });
+          break;
+        case 'toggle-dark-mode-switch': {
+          const nextTheme = isDarkActive() ? 'light' : 'dark';
+          await updateSettings({ theme: nextTheme });
+          break;
+        }
+        case 'set-week-start':
+          await updateSettings({ weekStartsOn: Number(btn.getAttribute('data-day')) === 0 ? 0 : 1 });
+          break;
+        case 'toggle-show-periods':
+          await updateSettings({ showPeriodsOnCalendar: state.settings.showPeriodsOnCalendar === false });
+          break;
+        case 'toggle-never-miss-twice':
+          await updateSettings({ neverMissTwiceAlerts: state.settings.neverMissTwiceAlerts === false });
+          break;
+        case 'toggle-global-notifications': {
+          if (!state.settings.notificationsEnabled) {
+            const res = await requestNotificationPermissionInteractive();
+            await updateSettings({ notificationsEnabled: res.granted });
+            showToast(res.message);
+          } else {
+            await updateSettings({ notificationsEnabled: false });
+            showToast('Wyłączono przypomnienia lokalne.');
+          }
+          break;
+        }
+        case 'request-notifications': {
+          const res = await requestNotificationPermissionInteractive();
+          await updateSettings({ notificationsEnabled: res.granted });
+          showToast(res.message);
+          break;
+        }
+        case 'test-notification': {
+          const ok = await sendImmediateNotification(
+            'Rutyna – test powiadomień',
+            'Powiadomienia lokalne działają prawidłowo!'
+          );
+          showToast(ok ? 'Wysłano powiadomienie testowe.' : 'Najpierw włącz uprawnienia do powiadomień.');
+          break;
+        }
+        case 'export-json': {
+          const payload = {
+            schemaVersion: DB_VERSION,
+            exportedAt: new Date().toISOString(),
+            app: 'Rutyna',
+            habits: state.habits,
+            completions: state.completions,
+            plannerEntries: state.plannerEntries,
+            periods: state.periods,
+            settings: state.settings
+          };
+          const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `rutyna-kopia-${state.todayStr}.json`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+          showToast('Pobrano kopię zapasową JSON.');
+          break;
+        }
+        case 'import-json-trigger': {
+          const inp = document.getElementById('backup-file-input');
+          if (inp) inp.click();
+          break;
+        }
+        case 'cancel-import-json':
+          state.pendingBackupImport = null;
+          renderApp();
+          break;
+        case 'confirm-import-json':
+          if (state.pendingBackupImport) {
+            await dbRestoreBackup(state.pendingBackupImport);
+            state.pendingBackupImport = null;
+            await loadAllData();
+            showToast('Odtworzono dane z kopii zapasowej.');
+          }
+          break;
+        case 'export-csv-habits':
+          exportHabitsAndHistoryToCSV();
+          showToast('Pobrano plik CSV (Nawyki i historia).');
+          break;
+        case 'export-csv-planner':
+          exportPlannerAndPeriodsToCSV();
+          showToast('Pobrano plik CSV (Planer i okresy).');
+          break;
+        case 'ask-clear-all-data':
+          state.confirmClearAllData = true;
+          renderApp();
+          break;
+        case 'cancel-clear-all-data':
+          state.confirmClearAllData = false;
+          renderApp();
+          break;
+        case 'confirm-clear-all-data':
+          await dbClearAllData();
+          state.habits = [];
+          state.completions = [];
+          state.plannerEntries = [];
+          state.periods = [];
+          state.settings = { ...DEFAULT_SETTINGS };
+          state.confirmClearAllData = false;
+          applyTheme();
+          showToast('Wyczyszczono wszystkie dane z bazy.');
+          renderApp();
+          break;
+        case 'run-unit-tests':
+          state.unitTestResults = runBuiltInUnitTests();
+          renderApp();
+          break;
+        case 'hide-unit-tests':
+          state.unitTestResults = null;
+          renderApp();
+          break;
+      }
+    });
+
+    document.addEventListener('submit', async (e) => {
+      if (e.target && e.target.id === 'planner-entry-form') {
+        e.preventDefault();
+        syncPlannerFormInputs();
+        await savePlannerForm();
+      }
+    });
+
+    document.getElementById('backup-file-input')?.addEventListener('change', async (e) => {
+      const file = e.target.files?.[0];
+      e.target.value = '';
+      if (!file) return;
+      try {
+        const text = await file.text();
+        const raw = JSON.parse(text);
+        state.pendingBackupImport = validateBackupPayload(raw);
+        renderApp();
+      } catch (err) {
+        showToast(err instanceof Error ? err.message : 'Nieprawidłowy plik kopii zapasowej JSON.');
+      }
+    });
+
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+      if (state.settings.theme === 'system') applyTheme();
+    });
+
+    initPWA();
+    loadAllData();
+  </script>
+</body>
+</html>
